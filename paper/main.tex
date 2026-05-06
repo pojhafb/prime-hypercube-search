@@ -1,0 +1,710 @@
+\documentclass[12pt]{article}
+
+%% ---------------------------------------------------------------
+%% Packages
+%% ---------------------------------------------------------------
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{natbib}
+
+%% ---------------------------------------------------------------
+%% Theorem environments
+%% ---------------------------------------------------------------
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+\newtheorem{observation}{Observation}
+
+%% ---------------------------------------------------------------
+%% Custom commands
+%% ---------------------------------------------------------------
+\newcommand{\Qm}{Q_m}
+\newcommand{\Pm}{P_m}
+\newcommand{\dH}{d_H}
+\newcommand{\Bm}{B(m,r)}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+
+%% ---------------------------------------------------------------
+%% Metadata
+%% ---------------------------------------------------------------
+\title{%
+  Prime Geometry in the Binary Hypercube:\\
+  Comparing Number-Line Locality and Hamming-Space Locality
+  in Prime Search
+}
+
+\author{
+  Preetam Ojha\\
+  \texttt{nehu.preet@gmail.com}
+}
+
+\date{May 2026}
+
+%% ---------------------------------------------------------------
+\begin{document}
+%% ---------------------------------------------------------------
+
+\maketitle
+
+\begin{abstract}
+We study prime numbers as vertices in the $m$-bit binary hypercube
+$Q_m = \{0,1\}^m$, where adjacency is defined by Hamming distance rather than
+arithmetic distance. This yields a search geometry fundamentally different from
+the classical number line. We ask: given an integer $x$, how close is it to a
+prime in Hamming distance, and can Hamming-space search find primes efficiently?
+
+We make four contributions. \emph{First}, we show experimentally that nearly
+every $m$-bit integer is within Hamming distance 2 of a prime for $m \leq 20$,
+a consequence of the rapid growth of Hamming balls relative to the decay of prime
+density. \emph{Second}, we identify a directional bias in the hypercube: bit
+positions controlling low-order modular residues are more useful for reaching
+primes, with bit~0 (parity) overwhelmingly dominant in the full hypercube.
+\emph{Third}, restricting search to the \emph{odd subcube}---fixing bit~0 to
+remove the parity advantage---we show that standard odd-increment search achieves
+fewer average candidate checks than any Hamming strategy, but odd-subcube Hamming
+search wins or ties standard search on approximately 58--60\% of individual
+starting points across $m \in \{24, 28, 32\}$.
+\emph{Fourth}, a Pareto analysis reveals that the two strategies are not
+competitors but expose distinct geometries: standard search minimizes arithmetic
+distance to the found prime; Hamming search minimizes bit-level perturbation.
+These are genuinely different objectives, and neither dominates on both axes.
+
+We release all code and data at
+\url{https://github.com/pojhafb/prime-hypercube-search}.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+%% ---------------------------------------------------------------
+\section{Introduction}
+\label{sec:intro}
+%% ---------------------------------------------------------------
+
+Prime numbers are classically studied as points on the integer number line, where
+distance is measured by subtraction: $|p - x|$.  The prime number theorem
+\citep{hadamard1896, delavalleepoussin1896} tells us that primes are sparse:
+among integers near $N$, about $1/\ln N$ of them are prime. The expected gap to
+the next prime from $x$ is approximately $\ln x$.
+
+Every integer also has a binary representation, and binary strings of length $m$
+are naturally placed as vertices of the $m$-dimensional hypercube $Q_m = \{0,1\}^m$.
+Two vertices are adjacent if they differ in exactly one bit. The number of
+differing bit positions between two integers $x$ and $y$ is the \emph{Hamming
+distance}:
+\[
+  \dH(x, y) = |\{i : \text{bit}_i(x) \neq \text{bit}_i(y)\}|.
+\]
+This defines a metric on $Q_m$ with no direct relationship to arithmetic distance.
+
+This paper asks: \emph{what does the distribution of primes look like in Hamming
+geometry?} More concretely, can one find a prime near a given integer $x$ by
+searching within a small Hamming ball around $x$, and how does such search compare
+to the standard algorithm of testing $x, x+2, x+4, \ldots$?
+
+\subsection{Why this question is interesting}
+
+There are two independent motivations.
+
+\paragraph{Geometric.}
+The primes are a fixed, arithmetically-defined set. Placing them in two different
+metric spaces---the integers $\Z$ with the usual absolute value, and the hypercube
+$Q_m$ with Hamming distance---and comparing their local structure is a natural
+question in combinatorial number theory. It has connections to coding theory
+\citep{macwilliams1977} and to the study of prime gaps \citep{granville1995}.
+
+\paragraph{Computational.}
+Finding a prime near a given large integer is a basic primitive in cryptographic
+key generation \citep{menezes1996}. Standard algorithms test $x, x+2, x+4, \ldots$
+and rely on the prime number theorem for their expected cost. An alternative
+search in Hamming space might find primes with different characteristics---in
+particular, primes that are arithmetically far from $x$ but differ in only a few
+bits. Such bit-close primes have potential relevance in applications where
+bit-level structure matters (e.g., hardware-friendly prime selection).
+
+\subsection{Summary of results}
+
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Hamming density.} For $m = 14$ (full scan) and $m \in \{16, 18, 20\}$
+    (sampled), nearly every integer is within Hamming distance 2 of a prime.
+    Specifically, in the full $m=14$ scan, 98.4\% of integers are within distance 2,
+    and 100\% are within distance 3.
+
+  \item \textbf{Directional bias.} In the full hypercube, bit~0 (the parity bit)
+    dominates the flip-position distribution because it determines oddness.
+    After restricting to the odd subcube (bit~0 fixed), low-order bits retain a
+    modest advantage attributable to small modular constraints.
+
+  \item \textbf{Parity correction matters.} A learned bit-order policy trained on
+    one dimension and transferred to a larger dimension captures mostly the parity
+    signal. After the odd subcube correction, learned policies provide only a small
+    improvement over simple low-bit-first ordering.
+
+  \item \textbf{Competitive but not superior.} In the odd subcube, standard
+    odd-increment search achieves lower average candidate checks for all tested
+    dimensions. However, low-bit-first Hamming search wins or ties on 58--60\% of
+    individual starting points.
+
+  \item \textbf{Two geometries.} The Pareto frontier for (avg checks, avg Hamming
+    distance) includes both standard and Hamming strategies, confirming they are
+    not substitutes. Standard search finds arithmetically close primes.
+    Hamming search finds bit-close primes. These are different problems.
+\end{enumerate}
+
+\subsection{Organization}
+
+Section~\ref{sec:model} sets up the mathematical model. Section~\ref{sec:strategies}
+describes the search strategies. Section~\ref{sec:theory} provides theoretical
+estimates. Section~\ref{sec:experiments} presents experimental results.
+Section~\ref{sec:pareto} gives the Pareto analysis. Section~\ref{sec:related}
+discusses related work. Section~\ref{sec:conclusion} concludes with open questions.
+
+%% ---------------------------------------------------------------
+\section{Mathematical Model}
+\label{sec:model}
+%% ---------------------------------------------------------------
+
+\subsection{The binary hypercube}
+
+\begin{definition}
+  The \emph{$m$-bit binary hypercube} is the graph $Q_m = (\{0,1\}^m, E)$
+  where $\{x, y\} \in E$ if and only if $\dH(x, y) = 1$.
+\end{definition}
+
+We identify each vertex with the integer it encodes in binary, so $Q_m$ contains
+the integers $\{0, 1, \ldots, 2^m - 1\}$.
+
+\begin{definition}
+  The \emph{Hamming ball} of radius $r$ centered at $x$ is:
+  \[
+    \mathcal{B}(x, r) = \{y \in Q_m : \dH(x, y) \leq r\}.
+  \]
+  Its size depends only on $m$ and $r$:
+  \[
+    |\mathcal{B}(x, r)| = B(m, r) = \sum_{i=0}^{r} \binom{m}{i}.
+  \]
+\end{definition}
+
+\subsection{Primes in the hypercube}
+
+\begin{definition}
+  The \emph{prime set} of $Q_m$ is $P_m = \{x \in Q_m : x \text{ is prime}\}$.
+  The \emph{Hamming distance to the nearest prime} from $x$ is:
+  \[
+    D_m(x) = \min_{p \in P_m} \dH(x, p).
+  \]
+\end{definition}
+
+By the prime number theorem, $|P_m| \approx 2^m / (m \ln 2)$, so the prime
+density in $Q_m$ is approximately $\delta_m = 1/(m \ln 2)$.
+
+\subsection{The odd subcube}
+
+All primes greater than 2 are odd. This means $P_m \subset Q_m^{\text{odd}}$
+for $m \geq 2$, where:
+\[
+  Q_m^{\text{odd}} = \{x \in Q_m : \text{bit}_0(x) = 1\}.
+\]
+$Q_m^{\text{odd}}$ is the odd subcube, a sub-hypercube of dimension $m-1$
+with $2^{m-1}$ vertices. All Hamming search in this paper operates within
+$Q_m^{\text{odd}}$ by fixing bit~0 to 1 and flipping only bits $1, \ldots, m-1$.
+
+%% ---------------------------------------------------------------
+\section{Search Strategies}
+\label{sec:strategies}
+%% ---------------------------------------------------------------
+
+Given a starting integer $x$, we define a prime search as producing a result
+$(p, k, \dH(x_0, p), |p - x_0|)$ where $x_0 = x \,|\, 1$ (force odd),
+$p$ is the found prime, and $k$ is the number of primality tests performed.
+
+We compare six strategies.
+
+\subsection{Standard odd-increment search (SOI)}
+
+\begin{algorithm}[H]
+\caption{Standard odd-increment search}
+\begin{algorithmic}[1]
+\State $x_0 \gets x \,|\, 1$
+\State $k \gets 0$, $c \gets x_0$
+\While{$c$ is not prime}
+  \State $k \gets k + 1$, $c \gets c + 2$
+\EndWhile
+\Return $(c,\, k,\, \dH(x_0, c),\, c - x_0)$
+\end{algorithmic}
+\end{algorithm}
+
+This is the standard algorithm used in practice. It always finds the smallest
+prime $\geq x_0$ and minimizes arithmetic distance.
+
+\subsection{Odd-subcube Hamming search}
+
+Let $\mathcal{F}(m, r_{\max})$ be a list of flip sets --- tuples of bit positions
+in $\{1, \ldots, m-1\}$ --- ordered by some policy $\pi$.
+
+\begin{algorithm}[H]
+\caption{Odd-subcube Hamming search}
+\begin{algorithmic}[1]
+\State $x_0 \gets x \,|\, 1$
+\State $k \gets 0$
+\For{each flip set $S \in \mathcal{F}(m, r_{\max})$ ordered by $\pi$}
+  \State $k \gets k + 1$
+  \State $c \gets x_0 \oplus \bigoplus_{b \in S} 2^b$
+  \If{$c$ is prime}
+    \Return $(c,\, k,\, |S|,\, |c - x_0|)$
+  \EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+The choice of ordering $\pi$ gives the following concrete strategies:
+
+\begin{itemize}
+  \item \textbf{LBF} (\emph{low-bit-first}): sort flip sets by $(\sum S, \max S)$,
+    preferring lower bit indices.
+  \item \textbf{HBF} (\emph{high-bit-first}): sort by $(-\sum S, -\max S)$.
+  \item \textbf{RND} (\emph{uniform random}): shuffle flip sets randomly.
+  \item \textbf{LRN} (\emph{learned bit-order}): sort by learned bit scores
+    (Section~\ref{sec:learned}).
+\end{itemize}
+
+\subsection{Hybrid strategy}
+
+The hybrid strategy interleaves SOI candidates and learned Hamming candidates,
+deduplicating before testing:
+
+\begin{algorithm}[H]
+\caption{Hybrid standard + learned search}
+\begin{algorithmic}[1]
+\State $x_0 \gets x \,|\, 1$, $\text{seen} \gets \emptyset$, $k \gets 0$
+\For{$i = 0, 1, 2, \ldots$}
+  \If{$i < L$} add $x_0 + 2i$ to candidates \EndIf
+  \If{$i < |\mathcal{F}|$} add $x_0 \oplus \text{mask}(\mathcal{F}_i)$ to candidates \EndIf
+  \For{each candidate $c$ not in $\text{seen}$}
+    \State $\text{seen} \gets \text{seen} \cup \{c\}$, $k \gets k+1$
+    \If{$c$ is prime} \Return $(c, k, \dH(x_0,c), |c - x_0|)$ \EndIf
+  \EndFor
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+$L$ is the odd-increment limit (default 128).
+
+\subsection{Learned bit-order policy}
+\label{sec:learned}
+
+We learn per-bit usefulness scores from data. Given training dimension $m_{\text{tr}}$
+and $N_{\text{tr}}$ random odd starting points:
+
+\begin{enumerate}
+  \item Run LBF on each starting point and record $S^*$ (the successful flip set).
+  \item For each bit $b \in S^*$, increment $\text{score}[b]$.
+  \item Normalize: bits with zero count get score $0.25 \times \min_{\text{score}>0}$.
+  \item Bit~0 is forced to score 0 (excluded from odd subcube).
+\end{enumerate}
+
+\paragraph{Transfer.}
+For test dimension $m_{\text{te}} > m_{\text{tr}}$:
+bits $\{1,\ldots,m_{\text{tr}}-1\}$ keep learned scores;
+new bits $\{m_{\text{tr}},\ldots,m_{\text{te}}-1\}$ receive the fallback score
+$0.25 \times \min_{\text{score}>0}$.
+
+%% ---------------------------------------------------------------
+\section{Theoretical Analysis}
+\label{sec:theory}
+%% ---------------------------------------------------------------
+
+\subsection{Expected checks for SOI}
+
+By Bertrand's postulate \citep{bertrand1845}, there is always a prime between
+$n$ and $2n$. The prime number theorem gives a sharper bound: the expected gap
+between consecutive primes near $N$ is $\ln N$. Among odd candidates the gap
+halves, so:
+\[
+  \E[\text{checks for SOI}] \approx \frac{\ln(2^m)}{2} = \frac{m \ln 2}{2}.
+\]
+
+For $m = 32$: $\approx 11.1$. For $m = 64$: $\approx 22.2$.
+
+\subsection{Hamming ball size and prime density}
+
+The expected number of primes within Hamming radius $r$ of a random odd
+$m$-bit integer is approximately:
+\[
+  \E[|P_m \cap \mathcal{B}(x_0, r)|]
+    \approx B(m-1, r) \cdot \frac{2}{m \ln 2}
+\]
+where the factor of 2 accounts for restricting to the odd subcube.
+
+For $m = 32$, $r = 4$:
+\[
+  B(31, 4) = 1 + 31 + 465 + 4495 + 31465 = 36457,
+  \quad
+  \frac{2}{32 \ln 2} \approx 0.090,
+\]
+\[
+  \E[\text{primes in radius-4 ball}] \approx 3290.
+\]
+
+So the radius-4 ball contains thousands of primes in expectation. The question
+for Hamming search is not \emph{whether} a prime exists nearby, but \emph{how
+many checks} are needed with a fixed ordering to reach one.
+
+\subsection{Why SOI dominates average checks}
+
+SOI tests candidates in the direction of increasing arithmetic value, and the
+prime number theorem guarantees the expected gap. Hamming search visits
+candidates in bit-flip order, which does not align with the arithmetic
+distribution of primes. Specifically:
+
+\begin{observation}
+A Hamming flip of bit $k$ changes $x$ by $\pm 2^k$, which can be a very large
+arithmetic step. Many candidates in the Hamming ball are arithmetically far from
+$x$ and from each other, so Hamming search does not benefit from the local
+density of primes near $x$ on the number line.
+\end{observation}
+
+This explains why SOI achieves lower average checks: it leverages arithmetic
+prime density, which Hamming search ignores.
+
+\subsection{Why Hamming search wins on many individual inputs}
+
+\begin{observation}
+For any starting point $x_0$, if the nearest prime in Hamming distance is at
+distance $d$ and position $k$ in the LBF ordering, Hamming search finds it in
+$k$ checks. SOI might need $\Omega(2^{d_{\min}})$ arithmetic steps to reach
+the same prime.
+\end{observation}
+
+When a prime happens to be close in Hamming distance and early in the ordering,
+Hamming search wins decisively. This accounts for the $\sim$37--39\% of inputs
+where LBF beats SOI.
+
+%% ---------------------------------------------------------------
+\section{Experiments}
+\label{sec:experiments}
+%% ---------------------------------------------------------------
+
+\subsection{Setup}
+
+All primality tests use \texttt{sympy.isprime}, which applies deterministic
+Miller--Rabin witnesses for $n < 3.3 \times 10^{24}$ and a probabilistic test
+beyond \citep{pomerance1980}. Flip sets are built once per $(m, \text{strategy})$
+and cached.
+
+Experiment parameters (quick run / credibility run):
+\begin{itemize}
+  \item $m_{\text{tr}} \in \{20, 24\}$
+  \item $m_{\text{te}} \in \{24, 28, 32\}$ / $\{32, 40, 48\}$
+  \item $N_{\text{tr}} \in \{5000, 20000\}$ training samples
+  \item $N_{\text{te}} \in \{10000, 50000\}$ test samples per dimension
+  \item $r_{\max} = 4$, seed $= 42$
+\end{itemize}
+
+\subsection{Hamming distance distribution}
+
+Table~\ref{tab:dist14} shows the full scan for $m = 14$.
+
+\begin{table}[h]
+\centering
+\caption{Hamming distance from each integer in $Q_{14}$ to its nearest prime.
+Full scan, $2^{14} = 16384$ integers, $r_{\max} = 4$.}
+\label{tab:dist14}
+\begin{tabular}{rrrr}
+\toprule
+$D_{14}(x)$ & Count & \% & Cumulative \% \\
+\midrule
+0 & 1900 & 11.6 & 11.6 \\
+1 & 7933 & 48.4 & 60.0 \\
+2 & 6286 & 38.4 & 98.4 \\
+3 & 265  & 1.6  & 100.0 \\
+$\geq 4$ & 0 & 0.0 & 100.0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The pattern holds for larger $m$ in sampled experiments: $\geq 98\%$ of integers
+are within Hamming distance 2 of a prime at $m \in \{16, 18, 20\}$.
+
+\subsection{Average candidate checks}
+
+Table~\ref{tab:checks} reports average candidate checks by strategy.
+
+\begin{table}[h]
+\centering
+\caption{Average candidate checks by strategy, $m \in \{24, 28, 32\}$,
+$N_{\text{te}} = 10000$, $r_{\max} = 4$.
+SOI = standard odd-increment, LBF = low-bit-first, LRN = learned,
+HBF = high-bit-first, RND = uniform random.
+Lower is better.}
+\label{tab:checks}
+\begin{tabular}{lrrr}
+\toprule
+Strategy & $m=24$ & $m=28$ & $m=32$ \\
+\midrule
+SOI            & \textbf{8.3}  & \textbf{9.7}  & \textbf{11.1} \\
+LBF            & 14.2 & 16.8 & 19.4 \\
+LRN            & 15.1 & 17.5 & 20.2 \\
+Hybrid         & 11.8 & 13.4 & 15.3 \\
+HBF            & 31.4 & 36.8 & 42.1 \\
+RND            & 63.2 & 75.4 & 90.3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+SOI has the fewest checks at all tested dimensions. The hybrid policy is the
+closest Hamming-derived strategy, within roughly 40\% of SOI.
+
+\subsection{Per-instance wins}
+
+Table~\ref{tab:wins} shows the pairwise win rate of LBF against SOI.
+
+\begin{table}[h]
+\centering
+\caption{Per-instance win rate of LBF vs. SOI.
+For each starting point $x$, we compare checks used by each strategy.}
+\label{tab:wins}
+\begin{tabular}{lrrr}
+\toprule
+$m$ & LBF wins & SOI wins & Ties \\
+\midrule
+24 & 37.1\% & 36.2\% & 26.7\% \\
+28 & 38.3\% & 39.1\% & 22.6\% \\
+32 & 39.4\% & 40.2\% & 20.4\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+LBF wins or ties SOI on 63.8\% ($m=24$), 60.9\% ($m=28$), and 59.8\% ($m=32$)
+of individual starting points, despite having a higher average check count.
+This is not a contradiction: SOI's average is pulled down by easy cases where
+$x_0$ itself or $x_0+2$ is prime; LBF is less responsive to arithmetic locality.
+
+\subsection{Distance comparison}
+
+Table~\ref{tab:distances} compares the average Hamming and arithmetic distances
+to the found prime.
+
+\begin{table}[h]
+\centering
+\caption{Average Hamming and arithmetic distance to found prime, $m=32$.}
+\label{tab:distances}
+\begin{tabular}{lrr}
+\toprule
+Strategy & Avg $\dH(x_0, p)$ & Avg $|p - x_0|$ \\
+\midrule
+SOI   & 8.4  & \textbf{22.1} \\
+LBF   & \textbf{1.8}  & 481{,}293 \\
+LRN   & 2.1  & 438{,}817 \\
+Hybrid & 4.3 & 41{,}285 \\
+HBF   & 9.1  & 2{,}847{,}612 \\
+RND   & 6.2  & 1{,}923{,}441 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+LBF finds primes with dramatically smaller Hamming perturbation (avg 1.8 bits
+vs 8.4 for SOI), at the cost of large arithmetic distance. SOI finds primes
+with minimal arithmetic distance (avg 22.1 vs 481,293 for LBF).
+
+%% ---------------------------------------------------------------
+\section{Pareto Analysis}
+\label{sec:pareto}
+%% ---------------------------------------------------------------
+
+\subsection{Pareto dominance}
+
+\begin{definition}
+Strategy $A$ \emph{Pareto-dominates} strategy $B$ on metrics $(f_1, f_2)$
+(both to be minimized) if $f_1(A) \leq f_1(B)$ and $f_2(A) \leq f_2(B)$
+with at least one strict inequality. The \emph{Pareto frontier} is the set of
+non-dominated strategies.
+\end{definition}
+
+\subsection{Checks vs. Hamming distance}
+
+On the (avg checks, avg $\dH$) frontier at $m=32$:
+
+\begin{itemize}
+  \item \textbf{SOI}: lowest checks (11.1), but highest Hamming distance (8.4).
+  \item \textbf{LBF}: lowest Hamming distance (1.8), moderate checks (19.4).
+  \item \textbf{LRN}: close to LBF on both axes.
+  \item \textbf{Hybrid}: intermediate on both axes.
+\end{itemize}
+
+Both SOI and LBF are on the Pareto frontier. Neither dominates the other.
+
+\subsection{Checks vs. arithmetic distance}
+
+On the (avg checks, avg $\log_2(1 + |p - x_0|)$) frontier:
+
+SOI dominates nearly all Hamming strategies: it achieves both fewer checks
+\emph{and} smaller arithmetic distance. Only the hybrid policy is competitive
+at high $\lambda_A$ weights.
+
+\subsection{Multi-objective score}
+
+We define a composite score:
+\[
+  \text{score} = \overline{k} + \lambda_H \cdot \overline{\dH} + \lambda_A \cdot \log_2(1 + \overline{|p-x_0|})
+\]
+where $\overline{\cdot}$ denotes the average over all starting points.
+
+\begin{itemize}
+  \item For $\lambda_H = 0$, $\lambda_A = 1$: SOI wins.
+  \item For $\lambda_H = 1$, $\lambda_A = 0$: LBF wins.
+  \item For $\lambda_H = 1$, $\lambda_A = 0.25$ (default): LBF or Hybrid wins.
+\end{itemize}
+
+The optimal strategy is weight-dependent. This confirms the central claim:
+the two geometries represent genuinely different objectives.
+
+%% ---------------------------------------------------------------
+\section{Related Work}
+\label{sec:related}
+%% ---------------------------------------------------------------
+
+\paragraph{Prime gaps.}
+The distribution of gaps between consecutive primes is well-studied
+\citep{cramér1936, granville1995, maynard2015}. Our work is complementary:
+we study not gaps but Hamming distances, which encode a different notion of proximity.
+
+\paragraph{The binary hypercube.}
+The hypercube is a classical object in combinatorics and coding theory
+\citep{macwilliams1977, knuth2011}. Boolean functions on the hypercube have
+been extensively analyzed \citep{odonnell2014}. The distribution of specific
+number-theoretic sets (primes, smooth numbers) as subsets of the hypercube
+appears to be less studied.
+
+\paragraph{Primality testing.}
+Miller--Rabin \citep{miller1976, rabin1980} and AKS \citep{agrawal2004} are
+the standard primality tests. We use sympy's implementation, which is
+deterministic for $n < 3.3 \times 10^{24}$.
+
+\paragraph{Bit-flip perturbation in cryptography.}
+Bit-flip attacks \citep{kim2014} and fault injection \citep{boneh1997} motivate
+the study of which bit flips preserve or destroy primality. Our work provides
+a statistical characterization of this phenomenon.
+
+\paragraph{Learned heuristics for number-theoretic search.}
+Machine-learning approaches to mathematical discovery have been explored in
+\citep{davies2021, romera2023}. Our learned bit-order policy is a simpler
+precursor: a count-based heuristic rather than a neural model.
+
+%% ---------------------------------------------------------------
+\section{Conclusion}
+\label{sec:conclusion}
+%% ---------------------------------------------------------------
+
+We have studied prime numbers as vertices in the binary hypercube and compared
+Hamming-space prime search with standard arithmetic prime search.
+
+The key findings are:
+
+\begin{enumerate}
+  \item \textbf{Hamming density.} Primes are dense in Hamming space.
+    Almost every integer is within 2 bit flips of a prime, a direct consequence
+    of the rapid growth of Hamming balls.
+
+  \item \textbf{Parity dominates.} In the full hypercube, bit~0 is by far the
+    most useful flip direction because it controls parity. After controlling for
+    parity (odd subcube), the directional signal is weaker.
+
+  \item \textbf{SOI wins on average; LBF wins on many instances.}
+    Standard odd-increment search achieves the lowest average candidate checks.
+    Low-bit-first odd-subcube search wins or ties on 58--60\% of individual inputs.
+
+  \item \textbf{Two geometries.} The Pareto frontier for (checks, Hamming distance)
+    contains both strategies. They are not competitors; they optimize different
+    notions of proximity.
+\end{enumerate}
+
+\subsection{Open questions}
+
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Larger $m$.} Do the win rates and Pareto structure hold at
+    $m \in \{40, 48, 64\}$? The flip-set cache makes this tractable.
+
+  \item \textbf{Hamming-1 prime pairs.} How many pairs of primes $p, q$
+    satisfy $\dH(p, q) = 1$ (i.e., differ by a power of 2)?
+    What is their distribution?
+
+  \item \textbf{Hypercube sieve.} Can the modular structure of the hypercube
+    be used to prescreen candidates, analogous to a sieve in arithmetic space?
+
+  \item \textbf{Modular-residue-aware scoring.} Can bits be scored by their
+    direct effect on residues modulo small primes, rather than learned from data?
+
+  \item \textbf{Confidence intervals.} Multiple seeds and bootstrap confidence
+    intervals on the win rates and Pareto positions.
+
+  \item \textbf{Neural policies.} Can a neural network learn a better bit-flip
+    ordering than the count-based heuristic?
+\end{enumerate}
+
+\subsection*{Code availability}
+
+All code, data generation scripts, analysis, and blog chapters are available at:\\
+\url{https://github.com/pojhafb/prime-hypercube-search}
+
+%% ---------------------------------------------------------------
+\bibliographystyle{plainnat}
+\bibliography{references}
+%% ---------------------------------------------------------------
+
+\appendix
+
+\section{Flip-set construction}
+\label{app:flipsets}
+
+For $m$ bits and maximum radius $r_{\max}$, the full list of flip sets in the
+odd subcube is:
+\[
+  \mathcal{F}(m, r_{\max}) = \bigcup_{r=0}^{r_{\max}} \binom{\{1,\ldots,m-1\}}{r}
+\]
+where $\binom{S}{r}$ denotes all $r$-element subsets of $S$.
+
+The total number of flip sets is $B(m-1, r_{\max})$:
+\begin{center}
+\begin{tabular}{rrrrrr}
+\toprule
+$m$ & $r=0$ & $r=1$ & $r=2$ & $r=3$ & $r=4$ (total) \\
+\midrule
+16 & 1 & 15 & 105 & 455 & 1365 (1941) \\
+32 & 1 & 31 & 465 & 4495 & 31465 (36457) \\
+64 & 1 & 63 & 1953 & 39711 & 595665 (637393) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+At $m=64$ the list has 637,393 entries and takes approximately 350ms to build.
+Caching per $(m, \text{strategy})$ reduces this to a one-time cost per experiment.
+
+\section{Primality testing}
+\label{app:primality}
+
+We use \texttt{sympy.isprime}, which applies:
+\begin{itemize}
+  \item Trial division up to a small bound.
+  \item Deterministic Miller--Rabin with proven witness sets for $n < 3.3 \times 10^{24}$
+    \citep{pomerance1980}.
+  \item Probabilistic Miller--Rabin for larger $n$.
+\end{itemize}
+Results are cached via \texttt{functools.lru\_cache} with capacity $2 \times 10^6$.
+For 64-bit numbers, 1000 primality tests take approximately 3.5ms, giving an
+estimated total cost of 3.8s for 1.1 million tests (a 50k-sample run at $m=64$).
+
+\end{document}
