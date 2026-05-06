@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.idea/
+*.egg-info/
+dist/
+build/
+venv/
+.env
+
+# Generated outputs — reproducible by running scripts
+results/raw/
+results/summaries/
+results/plots/
+*.csv
+*.png
