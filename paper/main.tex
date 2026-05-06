@@ -17,11 +17,8 @@
 
 %% ---------------------------------------------------------------
 %% Theorem environments
+%% (No theorems are proved; only definitions, observations, remarks)
 %% ---------------------------------------------------------------
-\newtheorem{theorem}{Theorem}
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{proposition}[theorem]{Proposition}
-\newtheorem{corollary}[theorem]{Corollary}
 \newtheorem{definition}{Definition}
 \newtheorem{remark}{Remark}
 \newtheorem{observation}{Observation}
@@ -53,11 +50,24 @@
 
 \date{May 2026}
 
+%% arXiv subject classification
+%% Primary:   cs.DM  (Discrete Mathematics)
+%% Secondary: cs.DS  (Data Structures and Algorithms)
+%%
+%% ACM CCS 2012
+%%   Mathematics of computing -> Combinatorics
+%%   Theory of computation -> Design and analysis of algorithms
+
 %% ---------------------------------------------------------------
 \begin{document}
 %% ---------------------------------------------------------------
 
 \maketitle
+
+\begin{center}
+\small
+\textbf{arXiv subject classes:} cs.DM (primary), cs.DS (secondary)
+\end{center}
 
 \begin{abstract}
 We study prime numbers as vertices in the $m$-bit binary hypercube
@@ -66,21 +76,21 @@ arithmetic distance. This yields a search geometry fundamentally different from
 the classical number line. We ask: given an integer $x$, how close is it to a
 prime in Hamming distance, and can Hamming-space search find primes efficiently?
 
-We make four contributions. \emph{First}, we show experimentally that nearly
+We report four empirical findings. \emph{First}, experiments show that nearly
 every $m$-bit integer is within Hamming distance 2 of a prime for $m \leq 20$,
-a consequence of the rapid growth of Hamming balls relative to the decay of prime
-density. \emph{Second}, we identify a directional bias in the hypercube: bit
-positions controlling low-order modular residues are more useful for reaching
-primes, with bit~0 (parity) overwhelmingly dominant in the full hypercube.
+consistent with the rapid growth of Hamming balls relative to the decay of prime
+density. \emph{Second}, we observe a directional bias in the hypercube: bit
+positions controlling low-order modular residues tend to be more useful for
+reaching primes, with bit~0 (parity) overwhelmingly dominant in the full hypercube.
 \emph{Third}, restricting search to the \emph{odd subcube}---fixing bit~0 to
-remove the parity advantage---we show that standard odd-increment search achieves
-fewer average candidate checks than any Hamming strategy, but odd-subcube Hamming
-search wins or ties standard search on approximately 58--60\% of individual
+remove the parity advantage---we find that standard odd-increment search achieves
+fewer average candidate checks than the Hamming strategies tested, but odd-subcube
+Hamming search uses fewer or equal checks on approximately 58--60\% of individual
 starting points across $m \in \{24, 28, 32\}$.
-\emph{Fourth}, a Pareto analysis reveals that the two strategies are not
-competitors but expose distinct geometries: standard search minimizes arithmetic
-distance to the found prime; Hamming search minimizes bit-level perturbation.
-These are genuinely different objectives, and neither dominates on both axes.
+\emph{Fourth}, a Pareto analysis suggests that the two strategies are not
+direct competitors but tend to optimize different objectives: standard search
+finds arithmetically close primes; Hamming search finds bit-close primes.
+In the experiments reported here, neither dominates on both axes simultaneously.
 
 We release all code and data at
 \url{https://github.com/pojhafb/prime-hypercube-search}.
@@ -122,46 +132,51 @@ There are two independent motivations.
 \paragraph{Geometric.}
 The primes are a fixed, arithmetically-defined set. Placing them in two different
 metric spaces---the integers $\Z$ with the usual absolute value, and the hypercube
-$Q_m$ with Hamming distance---and comparing their local structure is a natural
-question in combinatorial number theory. It has connections to coding theory
-\citep{macwilliams1977} and to the study of prime gaps \citep{granville1995}.
+$Q_m$ with Hamming distance---and comparing their local density structure is a
+natural question in discrete mathematics. It draws on the combinatorics of the
+hypercube \citep{macwilliams1977, knuth2011} and is loosely motivated by the
+study of prime gaps \citep{granville1995}, though the connection is geometric
+rather than analytic.
 
 \paragraph{Computational.}
 Finding a prime near a given large integer is a basic primitive in cryptographic
 key generation \citep{menezes1996}. Standard algorithms test $x, x+2, x+4, \ldots$
 and rely on the prime number theorem for their expected cost. An alternative
-search in Hamming space might find primes with different characteristics---in
+search in Hamming space produces primes with different characteristics---in
 particular, primes that are arithmetically far from $x$ but differ in only a few
-bits. Such bit-close primes have potential relevance in applications where
-bit-level structure matters (e.g., hardware-friendly prime selection).
+bits. Whether bit-close primes have practical advantages over arithmetic-close
+primes is an open question; the goal here is to characterize the two search
+geometries rather than to advocate for one.
 
 \subsection{Summary of results}
 
 \begin{enumerate}[label=(\roman*)]
-  \item \textbf{Hamming density.} For $m = 14$ (full scan) and $m \in \{16, 18, 20\}$
-    (sampled), nearly every integer is within Hamming distance 2 of a prime.
-    Specifically, in the full $m=14$ scan, 98.4\% of integers are within distance 2,
-    and 100\% are within distance 3.
+  \item \textbf{Hamming density (empirical).} In a full scan of $Q_{14}$ and
+    sampled experiments at $m \in \{16, 18, 20\}$, nearly every integer is within
+    Hamming distance 2 of a prime. Specifically, in the $m=14$ scan, 98.4\% of
+    integers are within distance 2 and 100\% within distance 3. This is consistent
+    with the rapid growth of Hamming balls, though we do not prove it holds in
+    general.
 
-  \item \textbf{Directional bias.} In the full hypercube, bit~0 (the parity bit)
-    dominates the flip-position distribution because it determines oddness.
-    After restricting to the odd subcube (bit~0 fixed), low-order bits retain a
-    modest advantage attributable to small modular constraints.
+  \item \textbf{Directional bias (empirical).} In the full hypercube, bit~0
+    (parity) dominates the flip-position distribution. After restricting to the
+    odd subcube, low-order bits retain a modest advantage, consistent with their
+    role in small modular constraints.
 
-  \item \textbf{Parity correction matters.} A learned bit-order policy trained on
-    one dimension and transferred to a larger dimension captures mostly the parity
-    signal. After the odd subcube correction, learned policies provide only a small
-    improvement over simple low-bit-first ordering.
+  \item \textbf{Parity dominates learned signal (empirical).} A bit-order policy
+    learned from training data and transferred across dimensions captures mostly
+    the parity signal. After the odd subcube correction, learned policies show
+    only a small improvement over simple low-bit-first ordering in these experiments.
 
-  \item \textbf{Competitive but not superior.} In the odd subcube, standard
-    odd-increment search achieves lower average candidate checks for all tested
-    dimensions. However, low-bit-first Hamming search wins or ties on 58--60\% of
-    individual starting points.
+  \item \textbf{SOI wins average checks; LBF competitive per-instance (empirical).}
+    In the odd subcube, standard odd-increment search achieves lower average
+    candidate checks across all tested dimensions. Low-bit-first Hamming search
+    uses fewer or equal checks on 58--60\% of individual starting points.
 
-  \item \textbf{Two geometries.} The Pareto frontier for (avg checks, avg Hamming
-    distance) includes both standard and Hamming strategies, confirming they are
-    not substitutes. Standard search finds arithmetically close primes.
-    Hamming search finds bit-close primes. These are different problems.
+  \item \textbf{Two geometries (empirical).} In Pareto space (avg checks vs avg
+    Hamming distance), both strategies appear on the frontier in these experiments.
+    Standard search finds arithmetically close primes; Hamming search finds
+    bit-close primes. The Pareto structure is consistent across $m \in \{24, 28, 32\}$.
 \end{enumerate}
 
 \subsection{Organization}
@@ -323,19 +338,23 @@ new bits $\{m_{\text{tr}},\ldots,m_{\text{te}}-1\}$ receive the fallback score
 $0.25 \times \min_{\text{score}>0}$.
 
 %% ---------------------------------------------------------------
-\section{Theoretical Analysis}
+\section{Heuristic Analysis}
 \label{sec:theory}
 %% ---------------------------------------------------------------
 
+\noindent\textit{This section provides heuristic estimates and informal
+arguments to build intuition. No new theorems are proved.}
+
 \subsection{Expected checks for SOI}
 
-By Bertrand's postulate \citep{bertrand1845}, there is always a prime between
-$n$ and $2n$. The prime number theorem gives a sharper bound: the expected gap
-between consecutive primes near $N$ is $\ln N$. Among odd candidates the gap
-halves, so:
+The prime number theorem implies that the average gap between consecutive primes
+near $N$ is approximately $\ln N$. Restricting to odd candidates halves this,
+giving a heuristic estimate:
 \[
   \E[\text{checks for SOI}] \approx \frac{\ln(2^m)}{2} = \frac{m \ln 2}{2}.
 \]
+This is a well-known approximation; the actual distribution of prime gaps has
+finer structure \citep{cramér1936, granville1995}.
 
 For $m = 32$: $\approx 11.1$. For $m = 64$: $\approx 22.2$.
 
@@ -596,8 +615,9 @@ deterministic for $n < 3.3 \times 10^{24}$.
 
 \paragraph{Bit-flip perturbation in cryptography.}
 Bit-flip attacks \citep{kim2014} and fault injection \citep{boneh1997} motivate
-the study of which bit flips preserve or destroy primality. Our work provides
-a statistical characterization of this phenomenon.
+the study of which bit flips preserve or destroy primality. The present work
+offers empirical data on Hamming distances between integers and nearby primes,
+which may be a relevant starting point for such questions.
 
 \paragraph{Learned heuristics for number-theoretic search.}
 Machine-learning approaches to mathematical discovery have been explored in
@@ -612,24 +632,26 @@ precursor: a count-based heuristic rather than a neural model.
 We have studied prime numbers as vertices in the binary hypercube and compared
 Hamming-space prime search with standard arithmetic prime search.
 
-The key findings are:
+The key empirical findings, for $m \leq 32$ and the experimental parameters
+described in Section~\ref{sec:experiments}, are:
 
 \begin{enumerate}
-  \item \textbf{Hamming density.} Primes are dense in Hamming space.
-    Almost every integer is within 2 bit flips of a prime, a direct consequence
-    of the rapid growth of Hamming balls.
+  \item \textbf{Hamming density (empirical).} In all experiments, nearly every
+    integer is within 2 bit flips of a prime, consistent with the growth of
+    Hamming balls. This is an empirical observation, not a proved theorem.
 
-  \item \textbf{Parity dominates.} In the full hypercube, bit~0 is by far the
-    most useful flip direction because it controls parity. After controlling for
-    parity (odd subcube), the directional signal is weaker.
+  \item \textbf{Parity dominates the learned signal.} In the full hypercube,
+    bit~0 is overwhelmingly the most useful direction due to parity. After
+    the odd subcube correction, the remaining directional signal is weak.
 
-  \item \textbf{SOI wins on average; LBF wins on many instances.}
-    Standard odd-increment search achieves the lowest average candidate checks.
-    Low-bit-first odd-subcube search wins or ties on 58--60\% of individual inputs.
+  \item \textbf{SOI wins average checks; LBF competitive per-instance.}
+    Standard odd-increment search achieves the lowest average candidate checks
+    in all tested configurations. Low-bit-first wins or ties on 58--60\% of
+    individual inputs at $m \in \{24, 28, 32\}$.
 
-  \item \textbf{Two geometries.} The Pareto frontier for (checks, Hamming distance)
-    contains both strategies. They are not competitors; they optimize different
-    notions of proximity.
+  \item \textbf{Pareto structure (empirical).} In the (avg checks, avg Hamming
+    distance) plane, both strategies appear on the empirical frontier. Whether
+    this structure persists at larger $m$ is an open question.
 \end{enumerate}
 
 \subsection{Open questions}
