@@ -70,17 +70,30 @@ def main() -> None:
     all_df.to_csv(raw_path, index=False)
     print(f"\nRaw results saved to {raw_path}")
 
-    summary = (
-        all_df.groupby(["m", "radius", "source"])
-        .agg(
-            mean_z=("z_score", "mean"),
-            std_z=("z_score", "std"),
-            mean_disc=("discrepancy", "mean"),
-            std_disc=("discrepancy", "std"),
-            samples=("z_score", "count"),
-        )
-        .reset_index()
-    )
+    from scipy.stats import skew as sp_skew, kurtosis as sp_kurtosis
+
+    def _stats(s: pd.Series) -> dict:
+        arr = s.dropna().values
+        return {
+            "mean": float(arr.mean()),
+            "std": float(arr.std(ddof=1)),
+            "skew": float(sp_skew(arr)),
+            "excess_kurtosis": float(sp_kurtosis(arr)),  # excess kurtosis (normal=0)
+            "n": len(arr),
+        }
+
+    rows_stat = []
+    for (m_val, r, src), grp in all_df.groupby(["m", "radius", "source"]):
+        zs = _stats(grp["z_score"])
+        ds = _stats(grp["discrepancy"])
+        rows_stat.append({
+            "m": m_val, "radius": r, "source": src,
+            "mean_z": zs["mean"], "std_z": zs["std"],
+            "skew_z": zs["skew"], "excess_kurt_z": zs["excess_kurtosis"],
+            "mean_disc": ds["mean"], "std_disc": ds["std"],
+            "n": zs["n"],
+        })
+    summary = pd.DataFrame(rows_stat)
     sum_path = sum_dir / "hamming_ball_discrepancy_summary.csv"
     summary.to_csv(sum_path, index=False)
     print(f"Summary saved to {sum_path}")

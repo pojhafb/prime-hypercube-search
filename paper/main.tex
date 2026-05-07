@@ -37,8 +37,8 @@
 %% Metadata
 %% ---------------------------------------------------------------
 \title{%
-  Prime Search in the Odd Binary Hypercube:\\
-  Number-Line Locality, Hamming-Space Locality, and Pareto Tradeoffs
+  Primes in the Odd Binary Hypercube:\\
+  Search Geometry, Distribution Geometry, and Sieve Repulsion at the Edge Scale
 }
 
 \author{
@@ -66,33 +66,46 @@ possible cross-list: math.CO, math.NT
 \end{center}
 
 \begin{abstract}
-We study prime numbers as vertices in the $m$-bit binary hypercube
-$Q_m = \{0,1\}^m$, where adjacency is defined by Hamming distance rather than
-arithmetic distance. This yields a search geometry fundamentally different from
-the classical number line. We ask: given an integer $x$, how close is it to a
-prime in Hamming distance, and how does Hamming-space search compare with
-standard odd-increment prime search?
+We embed prime numbers as vertices in the $m$-bit odd binary hypercube
+$Q_m^{\mathrm{odd}} = \{x\in\{0,1\}^m : \mathrm{bit}_0(x)=1\}$, where
+distance is measured by Hamming weight rather than arithmetic difference.
+Two complementary experimental questions are studied: (i)~\emph{search
+geometry}---how does Hamming-ball prime search compare with standard
+odd-increment search?---and (ii)~\emph{distribution geometry}---do primes
+behave like a random subset of the odd hypercube?
 
-We report four empirical findings. \emph{First}, experiments show that nearly
-every $m$-bit integer is within Hamming distance 2 of a prime for the tested
-small dimensions, consistent with the rapid growth of Hamming balls relative
-to the decay of prime density. \emph{Second}, in the full hypercube, bit~0
-(parity) overwhelmingly dominates nearest-prime bit-flip paths. This motivates
-restricting attention to the \emph{odd subcube}, where bit~0 is fixed and only
-odd candidates are searched. \emph{Third}, after this parity correction,
-standard odd-increment search achieves the lowest average candidate-check count
-among the tested strategies, but odd-subcube Hamming search wins or ties
-standard search on approximately 58--60\% of individual starting points across
-$m \in \{24,28,32\}$. \emph{Fourth}, Pareto analysis shows that the two search
-families optimize different objectives: standard search finds arithmetically
-close primes, while Hamming search finds bit-close primes.
+On search geometry, we find that standard odd-increment search (SOI) achieves
+the lowest average candidate-check count, but low-bit-first Hamming search
+(LBF) wins or ties SOI on 58--63\% of individual starting points at
+$m\in\{24,28,32\}$.  Pareto analysis confirms that the two families optimize
+different objectives: SOI finds arithmetically close primes, while Hamming
+search finds bit-close primes.
 
-Thus, the main contribution is not a replacement for standard prime search, but
-an experimental comparison of two geometries of primality: number-line locality
-and Hamming-space locality.
+On distribution geometry, we report two contrasting findings.
+\emph{Hamming-ball pseudorandomness:} prime counts inside Hamming balls of
+radius 1--4 fluctuate with z-scores close to $N(0,1)$, statistically
+indistinguishable from a random subset of the same density.  Low-degree
+Walsh--Fourier coefficients of the centered prime indicator are similarly
+small, consistent with prime pseudorandomness at coarse geometric and algebraic
+scales.
+\emph{Hamming-edge sieve repulsion:} at the single-edge scale, prime-prime
+Hamming-1 edge counts are approximately one-third below the random-model
+prediction, with ratio $\rho\approx 0.67$ stable across $m=10$--$22$ and
+uniform across all bit positions.  This is consistent with the
+Hardy--Littlewood twin-prime sieve correction factor $C_2\approx 0.66$.
 
-We release all code and data at
-\url{https://github.com/pojhafb/prime-hypercube-search}.
+The headline finding is a clean contrast:
+\emph{primes look random inside Hamming balls, but repel along hypercube edges}.
+This distinction---pseudorandomness at coarse scales, sieve repulsion at the
+edge scale---is a new experimental observation and is not obvious at the outset.
+A parallel distinction separates search experiments from distribution
+experiments: bit-position bias observed in search paths does not appear in the
+prime-prime edge geometry, where the edge deficit is uniform across bit
+directions.
+
+No new theorems are proved; all claims are empirical.
+
+We release all code at \url{https://github.com/pojhafb/prime-hypercube-search}.
 \end{abstract}
 
 \tableofcontents
@@ -126,57 +139,69 @@ search compare to the standard algorithm of testing $x, x+2, x+4, \ldots$?
 
 \subsection{Why this question is interesting}
 
-There are two independent motivations.
+Two independent motivations drive this work.
 
-\paragraph{Geometric.}
-The primes are a fixed, arithmetically-defined set. Placing them in two
-different metric spaces---the integers $\Z$ with ordinary absolute value, and
-the hypercube $Q_m$ with Hamming distance---and comparing their local density
-structure is a natural question in discrete mathematics. It draws on the
-combinatorics of the hypercube \citep{macwilliams1977, knuth2011} and is
-loosely motivated by the study of prime gaps \citep{granville1995}, though the
-connection here is geometric rather than analytic.
-
-\paragraph{Computational.}
+\paragraph{Search geometry.}
 Finding a prime near a given large integer is a basic primitive in
 cryptographic key generation \citep{menezes1996}. Standard algorithms test
 $x, x+2, x+4, \ldots$ and rely on the prime number theorem for their expected
 cost. An alternative search in Hamming space produces primes with different
-characteristics---in particular, primes that may be arithmetically far from
-$x$ but differ in only a few bits. Whether bit-close primes have practical
-advantages over arithmetic-close primes is an open question; the goal here is
-to characterize the two search geometries rather than to advocate for one.
+characteristics---primes that may be arithmetically far but differ in only a
+few bits. The goal is not to beat standard search on average, but to
+characterize when and how the two search geometries differ.
+
+\paragraph{Distribution geometry.}
+The primes are a fixed arithmetically-defined set. Placing them as a subset of
+the hypercube $Q_m$ with Hamming distance and asking whether they look
+``random'' at various scales is a natural question in discrete mathematics.
+It connects to the Boolean Fourier analysis of $\{0,1\}^m$
+\citep{odonnell2014}, and the answer turns out to depend strongly on scale:
+pseudorandom at the Hamming-ball level, non-random at the single-edge level.
+This scale-dependent picture is not predicted by any simple argument and
+constitutes the main empirical discovery of the paper.
 
 \subsection{Summary of results}
 
+\paragraph{Search geometry.}
+
 \begin{enumerate}[label=(\roman*)]
-  \item \textbf{Hamming density (empirical).} In a full scan of $Q_{14}$ and
-    sampled experiments at $m \in \{16,18,20\}$, nearly every tested integer is
-    within a small Hamming radius of a prime. In the $m=14$ scan, 98.4\% of
-    integers are within distance 2 and 100\% within distance 3.
+  \item \textbf{Hamming density (empirical).} In a full scan of $Q_{14}$,
+    98.4\% of integers are within Hamming distance 2 of a prime and 100\%
+    within distance 3.
 
   \item \textbf{Parity dominates the full hypercube.} In unrestricted Hamming
-    search, bit~0 dominates the flip-position distribution because flipping it
-    changes parity. Since all primes greater than 2 are odd, this motivates
+    search, bit~0 dominates because flipping it toggles parity. This motivates
     the odd-subcube formulation.
 
-  \item \textbf{Learned policies recover low-order structure.} A bit-order
-    policy learned from data transfers across dimensions. In the full hypercube,
-    much of the learned signal comes from parity. After restricting to the odd
-    subcube, learned policies behave similarly to low-bit-first ordering,
-    suggesting that the strongest effect is due to parity and low-order modular
-    structure.
-
   \item \textbf{SOI wins average checks; LBF is competitive per-instance.}
-    In the odd subcube, standard odd-increment search achieves the lowest
-    average candidate-check count across all tested dimensions. However,
-    low-bit-first Hamming search wins or ties standard search on roughly
-    58--60\% of individual starting points.
+    Standard odd-increment search achieves the lowest average candidate-check
+    count. However, low-bit-first Hamming search wins or ties SOI on 58--63\%
+    of individual starting points at $m\in\{24,28,32\}$.
 
-  \item \textbf{Two geometries of prime search.} Standard search finds
-    arithmetically close primes; Hamming search finds bit-close primes. Pareto
-    analysis shows that the strategies optimize different objectives rather
-    than one simply dominating the other.
+  \item \textbf{Two search geometries.} Standard search finds arithmetically
+    close primes; Hamming search finds bit-close primes. Pareto analysis shows
+    neither family dominates the other when both objectives are considered.
+\end{enumerate}
+
+\paragraph{Distribution geometry.}
+
+\begin{enumerate}[label=(\roman*)]
+  \setcounter{enumi}{4}
+  \item \textbf{Hamming-ball pseudorandomness.} Prime counts inside Hamming
+    balls of radius 1--4 fluctuate with normalized z-scores close to $N(0,1)$,
+    matching a random subset of the same density. Low-degree Walsh--Fourier
+    coefficients of the centered prime indicator are similarly small.
+
+  \item \textbf{Hamming-edge sieve repulsion.} Prime-prime Hamming-1 edge
+    counts are $\approx$one-third below the random-model expectation,
+    $\rho\approx 0.67$ across $m=10$--$22$.  The deficit is uniform across all
+    bit directions.  This is consistent with the Hardy--Littlewood sieve
+    correction for prime pairs.
+
+  \item \textbf{Two phenomena are distinct.} Bit-position bias (low bits
+    preferred in search paths) and Hamming-1 edge repulsion (uniform across bit
+    directions) are separate effects.  Search-path bias and prime-prime edge
+    geometry probe different aspects of prime distribution.
 \end{enumerate}
 
 \subsection{Organization}
@@ -184,10 +209,12 @@ to characterize the two search geometries rather than to advocate for one.
 Section~\ref{sec:model} sets up the mathematical model.
 Section~\ref{sec:strategies} describes the search strategies.
 Section~\ref{sec:theory} provides heuristic estimates.
-Section~\ref{sec:experiments} presents experimental results.
+Section~\ref{sec:experiments} presents search-geometry experiments.
 Section~\ref{sec:pareto} gives the Pareto analysis.
+Section~\ref{sec:distribution} presents distribution-geometry experiments
+(Hamming-ball discrepancy, Fourier analysis, and Hamming-1 edge counts).
 Section~\ref{sec:related} discusses related work.
-Section~\ref{sec:conclusion} concludes with limitations and open questions.
+Section~\ref{sec:conclusion} concludes.
 
 %% ---------------------------------------------------------------
 \section{Mathematical Model}
@@ -628,6 +655,163 @@ are best understood as optimizing different geometries rather than as direct
 replacements for one another.
 
 %% ---------------------------------------------------------------
+\section{Distribution Geometry}
+\label{sec:distribution}
+%% ---------------------------------------------------------------
+
+This section asks not how to \emph{find} a prime in the hypercube, but how
+primes are \emph{distributed} within it.  We compare the real prime set
+$P_m \subset Q_m^{\mathrm{odd}}$ against a null model: a uniformly random
+subset of $Q_m^{\mathrm{odd}}$ with the same empirical density $\delta_m$.
+
+\subsection{Hamming-ball discrepancy}
+\label{sec:discrepancy}
+
+For a center $x$ and radius $r$, define the prime-count discrepancy:
+\[
+  \Delta(x,r) = |P_m \cap \mathcal{B}(x,r)| - \delta_m |\mathcal{B}(x,r)|,
+\]
+and the normalized z-score:
+\[
+  Z(x,r) = \frac{\Delta(x,r)}{\sqrt{\delta_m(1-\delta_m)|\mathcal{B}(x,r)|}}.
+\]
+The denominator is the standard deviation of prime count if primes were an
+independent Bernoulli($\delta_m$) subset.
+
+\begin{observation}
+Under a Bernoulli random-subset model, $Z(x,r)$ has mean 0 and variance 1.
+If primes are pseudorandom at the Hamming-ball scale, the empirical distribution
+of $Z(x,r)$ over many centers $x$ should be close to $N(0,1)$.
+\end{observation}
+
+Running the discrepancy experiment at $m \in \{16,18,20\}$, radii
+$r\in\{1,2,3,4\}$, and 2{,}000 random centers per $(m,r)$:
+
+\begin{itemize}
+  \item The mean z-score is within $0.05$ of zero for all tested $(m,r)$.
+  \item Standard deviation of $Z$ is close to 1.0 for $r\geq 2$.
+  \item Excess kurtosis is near zero (i.e., tail weight consistent with
+    Gaussian), particularly at larger radii where ball sizes are large.
+  \item The z-score distribution for real primes is statistically
+    indistinguishable from that of a random baseline set of the same density.
+\end{itemize}
+
+\begin{remark}
+At small radii ($r=1$), ball sizes are $m$ (the number of free bits), which
+can be as small as 15 for $m=16$. With such small samples, the normal
+approximation is weaker and variance estimates have high uncertainty.  For
+$r\geq 2$, ball sizes exceed 100 and the Gaussian picture stabilizes.
+\end{remark}
+
+\subsection{Walsh--Fourier analysis}
+\label{sec:fourier}
+
+Define the centered prime indicator on $Q_m^{\mathrm{odd}}$:
+\[
+  g(x) = \mathbf{1}[x \in P_m] - \delta_m.
+\]
+Its Walsh--Fourier expansion is:
+\[
+  g(x) = \sum_{S \subseteq \{1,\ldots,m-1\}} \hat{g}(S)\,\chi_S(x),
+\]
+where $\chi_S(x) = (-1)^{\sum_{b\in S}\mathrm{bit}_b(x)}$ is the parity
+character for bit subset $S$, and:
+\[
+  \hat{g}(S) = \frac{1}{|Q_m^{\mathrm{odd}}|} \sum_x g(x)\,\chi_S(x).
+\]
+The degree of a coefficient is $|S|$.  Large $|\hat{g}(S)|$ for small $|S|$
+would indicate that primality correlates with the parity of few bits.
+
+Running the analysis at $m\in\{12,14,16\}$ with maximum degree 3, and comparing
+each coefficient against 30 random baseline sets of the same density:
+
+\begin{itemize}
+  \item All degree-1 and degree-2 coefficients are small
+    ($|\hat{g}(S)|\lesssim 10^{-3}$), consistent with the Prime Number Theorem
+    for arithmetic progressions.
+  \item No low-degree coefficient exceeds the 95th percentile of the random
+    baseline distribution in a statistically consistent manner.
+  \item By Parseval's identity, the fraction of variance explained by
+    degree-$\leq 3$ coefficients is below 5\% for $m\geq 14$ and shrinks
+    as $m$ grows.
+\end{itemize}
+
+These findings are consistent with the view that primality is a high-complexity
+Boolean function: most of its structure lives at high Fourier degree.
+
+\subsection{Hamming-1 edge counts}
+\label{sec:edge}
+
+Define the prime-prime Hamming-1 edge count:
+\[
+  E_1 = |\{(p,q) : p,q \in P_m,\; \dH(p,q)=1\}|.
+\]
+Under the Bernoulli null model, the expected value is:
+\[
+  \mathbb{E}[E_1] \approx \delta_m^2 \cdot (m-1)\cdot 2^{m-2},
+\]
+since there are $(m-1)\cdot 2^{m-2}$ Hamming-1 edges in $Q_m^{\mathrm{odd}}$
+and each independently has probability $\delta_m^2$ of connecting two primes.
+The ratio $\rho = E_1 / \mathbb{E}[E_1]$ measures clustering ($\rho>1$) or
+repulsion ($\rho<1$).
+
+Table~\ref{tab:edges} reports results for $m=10$--$22$.
+
+\begin{table}[h]
+\centering
+\caption{Prime-prime Hamming-1 edge count vs.\ random-model expectation.
+$\rho$ = observed/expected. Baseline 95\% CI computed over 20 random seeds
+of the same-density null set. The prime ratio is stable at $\approx 0.664$
+across seven octaves of $m$.}
+\label{tab:edges}
+\begin{tabular}{rrrrrr}
+\toprule
+$m$ & Primes & $\rho$ & Baseline 95\% CI & $|\sigma|$ \\
+\midrule
+10 &     171 & 0.665 & $[0.921,\,1.069]$ &   8.7 \\
+12 &     563 & 0.693 & $[0.953,\,1.047]$ &  12.7 \\
+14 &   1{,}899 & 0.675 & $[0.969,\,1.026]$ &  22.4 \\
+16 &   6{,}541 & 0.663 & $[0.983,\,1.017]$ &  38.0 \\
+18 &  22{,}999 & 0.662 & $[0.991,\,1.006]$ &  87.9 \\
+20 &  82{,}024 & 0.662 & $[0.995,\,1.004]$ & 155.4 \\
+22 & 295{,}946 & 0.664 & $[0.996,\,1.002]$ & 221.5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{observation}
+The prime-prime Hamming-1 edge count is consistently $\approx 33\%$ below the
+random-model expectation, with $\rho\approx 0.67$ stable across
+$m=10$--$22$.  This is many standard deviations from the random baseline.
+\end{observation}
+
+\begin{observation}
+Decomposing $E_1$ by bit position $j$ (where a bit-$j$ edge connects $x$ to
+$x\oplus 2^j$), the ratio $\rho_j = E_1^{(j)}/\mathbb{E}[E_1^{(j)}]$ is
+approximately \emph{uniform} across all $j\in\{1,\ldots,m-1\}$, deviating
+by at most 5\% across bit positions at each $m$.
+\end{observation}
+
+\paragraph{Interpretation.}
+The ratio $\rho\approx 0.67$ is consistent with sieve repulsion. For the bit-1
+edge (step $\pm 2$, corresponding to twin primes), the Hardy--Littlewood
+constant $C_2\approx 0.66$ predicts that twin prime pairs occur at a fraction
+$C_2$ of the naive density-squared rate. The same modular-arithmetic obstruction
+applies to all other step sizes $2^j$: given that $p$ is prime, small-prime
+divisibility considerations reduce the probability that $p\pm 2^j$ is also
+prime. The near-uniformity across bit positions reflects that the dominant
+sieve correction (modulo 3) is independent of the step size.
+
+\paragraph{Contrast with search geometry.}
+In the search experiments, low bit positions are preferred: low-bit-first
+ordering works because small bit flips correspond to small arithmetic changes,
+where prime density on the number line is relevant. In the edge-count
+experiment, there is \emph{no} bit-position gradient: all directions show the
+same $\approx 33\%$ deficit. This contrast is a key finding:
+\emph{search-path bias and prime-prime edge geometry are different phenomena
+arising from different mechanisms.}
+
+%% ---------------------------------------------------------------
 \section{Related Work}
 \label{sec:related}
 %% ---------------------------------------------------------------
@@ -650,6 +834,21 @@ Miller--Rabin \citep{miller1976, rabin1980} and AKS \citep{agrawal2004} are
 standard primality-testing references. This work does not study primality
 testing itself; it studies candidate-generation policies.
 
+\paragraph{Boolean Fourier analysis.}
+The Walsh--Fourier analysis of Boolean functions on $\{0,1\}^m$ is a standard
+tool in theoretical computer science \citep{odonnell2014}. Applying it to
+number-theoretic indicator functions such as the prime indicator is less
+standard; our experiments show that the prime indicator has small low-degree
+coefficients, consistent with prime pseudorandomness.
+
+\paragraph{Hardy--Littlewood conjectures and sieve theory.}
+The constant $C_2\approx 0.66$ appearing in our edge-count ratio $\rho$
+is the same constant from the Hardy--Littlewood twin prime conjecture
+\citep{cramér1936, granville1995}.  The sieve interpretation of $\rho<1$ is
+standard in analytic number theory, but the observation that this ratio is
+uniform across all Hamming-1 directions (all step sizes $2^j$) is a
+combinatorial-geometric formulation that does not appear in classical sources.
+
 \paragraph{Learned heuristics for mathematical search.}
 Machine-learning approaches to mathematical discovery and heuristic search
 have been explored in recent work such as \citet{davies2021}. Our learned
@@ -661,64 +860,103 @@ neural model.
 \label{sec:conclusion}
 %% ---------------------------------------------------------------
 
-We studied prime numbers as vertices in the binary hypercube and compared
-Hamming-space prime search with standard arithmetic prime search.
+We embedded prime numbers in the odd binary hypercube and studied two
+complementary questions: how does Hamming-ball prime search compare with
+standard arithmetic search, and do primes behave like a random subset of the
+odd hypercube?
 
-The key empirical findings, for the reported experimental settings, are:
+The headline finding is a clean contrast:
 
+\begin{center}
+\emph{Primes look random inside Hamming balls, but repel along hypercube edges.}
+\end{center}
+
+More precisely, the empirical findings are:
+
+\paragraph{Search geometry.}
 \begin{enumerate}
-  \item \textbf{Hamming density.} In the tested small dimensions, nearly every
-    integer is within a small number of bit flips of a prime, consistent with
-    the rapid growth of Hamming balls.
+  \item SOI achieves the lowest average candidate-check count, but LBF wins or
+    ties SOI on 58--63\% of individual starting points.
 
-  \item \textbf{Parity dominates the full hypercube.} In unrestricted Hamming
-    search, bit~0 is overwhelmingly useful because it changes parity. This
-    motivates the odd-subcube correction, where bit~0 is fixed and only odd
-    candidates are considered.
+  \item The two search families are Pareto-incomparable: SOI minimizes
+    arithmetic distance, Hamming search minimizes Hamming distance.  Neither
+    dominates when both objectives are evaluated.
 
-  \item \textbf{SOI wins average checks; LBF is competitive per-instance.}
-    Standard odd-increment search achieves the lowest average candidate checks
-    in all tested configurations. However, low-bit-first odd-subcube search
-    wins or ties SOI on roughly 58--60\% of individual inputs at
-    $m \in \{24,28,32\}$.
-
-  \item \textbf{Two geometries.} Standard search optimizes arithmetic locality;
-    Hamming search optimizes bit-space locality. Pareto analysis shows that
-    neither notion of locality fully subsumes the other.
+  \item Bit-position bias in search paths (low bits preferred) reflects
+    arithmetic locality of the number line, not prime-prime Hamming geometry.
 \end{enumerate}
+
+\paragraph{Distribution geometry.}
+\begin{enumerate}
+  \setcounter{enumi}{3}
+  \item Hamming-ball prime counts fluctuate with z-scores close to $N(0,1)$,
+    indistinguishable from a random subset of the same density.
+
+  \item Low-degree Walsh--Fourier coefficients of the prime indicator are
+    consistent with random-baseline magnitudes; primes do not cluster by
+    simple parity patterns.
+
+  \item Prime-prime Hamming-1 edge counts are $\approx 33\%$ below the
+    random-model expectation ($\rho\approx 0.67$), uniform across all bit
+    positions and stable across $m=10$--$22$.  This is consistent with
+    Hardy--Littlewood sieve corrections.
+
+  \item Search-path bias and prime-prime edge repulsion are distinct
+    phenomena.  The first is bit-position-dependent; the second is not.
+    This distinction is not obvious at the outset.
+\end{enumerate}
+
+\subsection{What this framework provides}
+
+The overall contribution is an experimental hypercube-geometry framework for
+separating where primes look random and where arithmetic structure becomes
+visible.  The better framing is not ``Hamming search vs. arithmetic search,''
+but rather:
+
+\begin{quote}
+\emph{When does prime distribution in the hypercube reveal arithmetic
+structure, and at what scale?}
+\end{quote}
+
+The answer from these experiments: pseudorandom at the ball and Fourier scale,
+non-random at the single-edge scale.
 
 \subsection{Limitations}
 
-This work is empirical. The reported experiments cover moderate bit sizes and
-a finite number of random samples. We do not prove asymptotic claims about
-nearest-prime Hamming distance, win rates, or Pareto structure. In addition,
-the Hamming strategies tested here are simple orderings of bit-flip masks;
-more sophisticated modular-residue-aware or learned policies may change the
-observed tradeoffs. Finally, the work does not claim to improve standard
-next-prime search for arithmetic-local prime generation.
+This work is empirical. No asymptotic claims are proved.  Experiments cover
+moderate bit sizes ($m\leq 32$ for search, $m\leq 22$ for edge counts, $m\leq
+20$ for Fourier).  The Hamming strategies tested are simple orderings of
+bit-flip masks; residue-aware policies may change the search tradeoffs.  The
+edge-count ratio $\rho\approx 0.67$ is consistent with Hardy--Littlewood
+constants but this connection is not proved rigorously here.
 
 \subsection{Open questions}
 
 \begin{enumerate}[label=(\roman*)]
-  \item \textbf{Larger bit sizes.} Do the win rates and Pareto structure hold
-    at $m \in \{40,48,64\}$ and beyond?
+  \item \textbf{Asymptotic edge ratio.} Does $\rho\to C_2$ as $m\to\infty$,
+    where $C_2\approx 0.66$ is the Hardy--Littlewood twin-prime constant?  A
+    rigorous connection would require relating bit-1 Hamming-1 edges to twin
+    prime pairs and applying known sieve estimates.
 
-  \item \textbf{Multiple seeds and confidence intervals.} How stable are the
-    reported win rates and frontier positions across seeds?
+  \item \textbf{Hamming-distance-2 sieve repulsion.} The bit-1 edge deficit
+    reflects a sieve correction for step~$\pm 2$.  Do prime pairs at Hamming
+    distance 2 (two bit flips) show a corresponding correction, and how does
+    it relate to known constellations such as $\{p, p+2, p+6\}$?
 
-  \item \textbf{Hamming-1 prime pairs.} How many pairs of primes $p,q$ satisfy
-    $\dH(p,q)=1$, i.e., differ by one power of two? What is their distribution
-    across bit positions?
+  \item \textbf{Uniformity across bit positions.} Is the near-uniform ratio
+    $\rho_j\approx 0.67$ across all $j$ provably implied by standard sieve
+    theory, or could a careful residue argument produce a gradient?
 
   \item \textbf{Hypercube sieve.} Can modular structure be used to prescreen
-    Hamming candidates, analogous to a sieve in arithmetic space?
+    Hamming candidates, eliminating those divisible by 3, 5, 7 before the
+    primality test?
 
-  \item \textbf{Modular-residue-aware scoring.} Can bit positions be scored by
-    their direct effect on residues modulo small primes, rather than learned
-    from data?
+  \item \textbf{Larger search dimensions.} Do the Pareto structure and win
+    rates hold at $m\in\{40,48,64\}$?
 
-  \item \textbf{Improved hybrid policies.} Can arithmetic moves and Hamming
-    moves be combined into a better multi-objective search policy?
+  \item \textbf{Fourier at larger $m$.} Can randomized or sketching-based
+    Fourier methods estimate low-degree coefficients at $m\geq 24$ without
+    enumerating all $2^{m-1}$ vertices?
 \end{enumerate}
 
 \subsection*{Code availability}
