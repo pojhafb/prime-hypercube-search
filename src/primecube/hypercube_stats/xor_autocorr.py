@@ -145,3 +145,60 @@ class XORAutocorrelation:
     ) -> pd.DataFrame:
         """Return the n masks with highest (or lowest) rho."""
         return df.nlargest(n, by) if not ascending else df.nsmallest(n, by)
+
+    # ------------------------------------------------------------------
+    # Alternating-geometric model
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def fit_alternating_geometric(weight_summary: pd.DataFrame) -> dict:
+        """
+        Fit the model:  rho(k) = 1 + C0 * (-r)^k
+
+        where k is the Hamming weight of the XOR mask.
+
+        Uses log-linear least squares on |deviation| for the weights where the
+        signal is above noise (|mean_sigma| >= 1 by default), then extrapolates.
+
+        Returns dict with C0, r, predictions, and fit quality.
+        """
+        ws = weight_summary.copy().sort_values("popcount")
+        deviations = (ws["mean_rho"] - 1).values
+        weights = ws["popcount"].values.astype(float)
+
+        # Fit on weights with clear signal (|deviation| > noise floor)
+        noise_floor = 0.005
+        mask_fit = np.abs(deviations) > noise_floor
+        if mask_fit.sum() < 2:
+            mask_fit = np.ones(len(deviations), dtype=bool)
+
+        log_abs = np.log(np.abs(deviations[mask_fit]))
+        ks_fit = weights[mask_fit]
+        A = np.column_stack([np.ones_like(ks_fit), ks_fit])
+        logC0, logr = np.linalg.lstsq(A, log_abs, rcond=None)[0]
+        C0 = float(np.exp(logC0))
+        r = float(np.exp(logr))
+
+        # Predictions for all weights
+        predicted = 1 + C0 * ((-r) ** weights)
+        residuals = ws["mean_rho"].values - predicted
+        rmse = float(np.sqrt(np.mean(residuals ** 2)))
+
+        rows = []
+        for k, obs, pred, resid in zip(weights, ws["mean_rho"].values, predicted, residuals):
+            rows.append({
+                "popcount": int(k),
+                "observed_rho": obs,
+                "predicted_rho": pred,
+                "residual": resid,
+                "parity": "repel" if int(k) % 2 == 1 else "excess",
+            })
+
+        return {
+            "C0": C0,
+            "r": r,
+            "decay_factor_per_weight": r,
+            "effective_multiplier": -r,
+            "rmse": rmse,
+            "fit_table": pd.DataFrame(rows),
+        }

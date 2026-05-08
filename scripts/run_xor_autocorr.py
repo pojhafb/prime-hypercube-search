@@ -28,6 +28,7 @@ from primecube.plotting.xor_plots import (
     plot_rho_histogram,
     plot_rho_by_mod,
     plot_rho_vs_weight_trend,
+    plot_alternating_geometric_fit,
 )
 
 RESULTS_DIR = Path(__file__).parent.parent / "results"
@@ -37,7 +38,7 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="XOR autocorrelation of primes in Q_m^odd")
     p.add_argument("--ms", nargs="+", type=int, default=[16, 18, 20],
                    help="Dimensions (WHT limit: m<=26). Default: 16 18 20")
-    p.add_argument("--max-weight", type=int, default=4,
+    p.add_argument("--max-weight", type=int, default=8,
                    help="Max Hamming weight of XOR mask (default: 4)")
     p.add_argument("--small-primes", nargs="+", type=int, default=[3, 5, 7, 11])
     p.add_argument("--n-baselines", type=int, default=10,
@@ -115,13 +116,24 @@ def run_one(
     print("\n  Bottom-10 masks by rho (most sieve-repelled):")
     print(xac.top_masks(df_prime, 10, ascending=True).to_string(index=False))
 
+    # --- Alternating geometric model fit ---
+    fit = xac.fit_alternating_geometric(summary)
+    print("\n  Alternating geometric model: rho(k) = 1 + %.4f * (-%.4f)^k" % (fit["C0"], fit["r"]))
+    print("  Decay factor per weight: %.4f  (sign flips each level)" % fit["r"])
+    print("  RMSE: %.5f" % fit["rmse"])
+    print(fit["fit_table"].to_string(index=False))
+    sum_dir = out_dir.parent.parent / "summaries"
+    fit["fit_table"]["m"] = m
+    fit["fit_table"].to_csv(sum_dir / ("xor_model_fit_m%d.csv" % m), index=False)
+
     # --- Plots ---
     weights_to_show = sorted(df_prime["popcount"].unique())
     plot_rho_by_weight(df_prime, m, out_dir=out_dir, show=show)
-    plot_rho_histogram(df_prime, m, weights=weights_to_show, out_dir=out_dir, show=show)
+    plot_rho_histogram(df_prime, m, weights=weights_to_show[:4], out_dir=out_dir, show=show)
     for q in small_primes[:2]:
         plot_rho_by_mod(df_prime, m, q, weights=[1, 2], out_dir=out_dir, show=show)
     plot_rho_vs_weight_trend(summary, m, out_dir=out_dir, show=show)
+    plot_alternating_geometric_fit(fit, m, out_dir=out_dir, show=show)
 
     return df_prime
 

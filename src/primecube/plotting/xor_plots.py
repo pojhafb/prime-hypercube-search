@@ -193,6 +193,57 @@ def plot_degree_distribution(
     _save(fig, out_dir, f"prime_graph_degrees_m{m}.png", show)
 
 
+def plot_alternating_geometric_fit(
+    fit: dict,
+    m: int,
+    out_dir: Path | None = None,
+    show: bool = False,
+) -> None:
+    """Scatter + model curve for rho(k) = 1 + C0 * (-r)^k."""
+    table = fit["fit_table"]
+    C0, r = fit["C0"], fit["r"]
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5))
+
+    # Left: rho vs weight with model curve
+    weights_fine = np.linspace(0.5, table["popcount"].max() + 0.5, 300)
+    pred_fine = 1 + C0 * ((-r) ** weights_fine)
+
+    colors = ["tomato" if p == "repel" else "steelblue" for p in table["parity"]]
+    ax1.scatter(table["popcount"], table["observed_rho"], c=colors, s=80, zorder=5,
+                label="observed ρ")
+    ax1.plot(weights_fine, pred_fine, "k--", linewidth=1.2,
+             label=f"model: 1 + {C0:.3f}·(−{r:.3f})^k")
+    ax1.axhline(1.0, color="grey", linewidth=0.8, linestyle=":")
+    ax1.set_xlabel("Hamming weight of XOR mask")
+    ax1.set_ylabel("ρ(k) = C(a) / E[C(a)]")
+    ax1.set_title(f"XOR autocorrelation vs mask weight  (m={m})")
+    from matplotlib.patches import Patch
+    ax1.legend(handles=[
+        Patch(fc="tomato", label="odd weight (repulsion)"),
+        Patch(fc="steelblue", label="even weight (excess)"),
+        plt.Line2D([0], [0], color="k", linestyle="--", label=f"model (RMSE={fit['rmse']:.4f})"),
+    ])
+
+    # Right: |deviation| on log scale
+    devs = np.abs(table["observed_rho"].values - 1)
+    pred_devs = np.abs(table["predicted_rho"].values - 1)
+    ax2.semilogy(table["popcount"], devs, "o", color="steelblue", label="|observed − 1|")
+    ax2.semilogy(table["popcount"], pred_devs, "k--", label="|model − 1|")
+    ax2.set_xlabel("Hamming weight of XOR mask")
+    ax2.set_ylabel("|ρ(k) − 1|  (log scale)")
+    ax2.set_title("Geometric decay of XOR autocorrelation signal")
+    ax2.legend()
+
+    fig.suptitle(
+        f"ρ(k) ≈ 1 + {C0:.3f}·(−{r:.3f})^k   "
+        f"[decay ×{r:.2f} per weight, sign flips each level]",
+        fontsize=11,
+    )
+    fig.tight_layout()
+    _save(fig, out_dir, f"xor_alternating_geometric_m{m}.png", show)
+
+
 def plot_graph_metrics_vs_m(
     results: list[dict],
     out_dir: Path | None = None,
