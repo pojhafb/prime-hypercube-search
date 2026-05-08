@@ -1,23 +1,22 @@
 """
 XOR singular series  S_xor(a).
 
-For an XOR mask a, the prime-pair autocorrelation C_m(a) is predicted
-(heuristically) by:
-
-    C_m(a)  ~  S_xor(a) * delta_m^2 * 2^(m-1)
-
-where delta_m = |P_m| / 2^(m-1)  and
-
-    S_xor(a) = prod_{q prime}  P(q∤x AND q∤(x⊕a)) / (1 - 1/q)^2
+S_xor(a) = prod_{q prime, q>=3}  P(q|x AND q|x^a) / (1 - 1/q)^2
 
 The local factor at prime q measures how much the XOR structure of a
-reduces (or increases) the chance that both x and x⊕a avoid q relative
+reduces (or increases) the chance that both x and x^a avoid q relative
 to independent random odd integers.
 
-This is the XOR analog of the Hardy-Littlewood singular series for
-arithmetic prime pairs (p, p+d).  Unlike the arithmetic case, the XOR
-operation does NOT respect modular arithmetic, so the local factor must be
-computed numerically rather than from a simple residue formula.
+Exact analytical results:
+
+  Weight-1 (a = 2^j for any j >= 1):
+    phi_q(2^j) = q*(q-2)/(q-1)^2   for ALL odd prime q, ALL j.
+    Product over all q: S_xor(2^j) = C_2 ~= 0.66016 (Hardy-Littlewood constant).
+
+  Weight-2 (a = 2^j + 2^k, diff = |k-j|):
+    phi_q(a) = q*(2q-3)/(2*(q-1)^2)   if 2^diff ≡ ±1 (mod q)  [resonant]
+             = q*(q-2)/(q-1)^2          otherwise               [non-resonant]
+    For q=3 (ord=2), ALL weight-2 masks are resonant (phi_3 = 9/8 always).
 """
 
 from __future__ import annotations
@@ -120,6 +119,57 @@ def batch_singular_series(
             not_blocked = int(np.sum((xmod != 0) & (xamod != 0)))
             frac = not_blocked / N
             S[mask] *= frac / baseline
+    return S
+
+
+# -----------------------------------------------------------------------
+# Analytical local-factor formulas (exact, weight 1 and 2)
+# -----------------------------------------------------------------------
+
+def analytic_local_factor_weight1(q: int) -> float:
+    """
+    Exact local factor for any weight-1 mask 2^j (j >= 1) at odd prime q.
+
+        phi_q(2^j) = q*(q-2)/(q-1)^2
+
+    Independent of j.  Product over all q gives the Hardy-Littlewood
+    twin prime constant C2 ~= 0.66016.
+    """
+    return q * (q - 2) / (q - 1) ** 2
+
+
+def analytic_local_factor_weight2(q: int, diff: int) -> float:
+    """
+    Exact local factor for weight-2 mask 2^j + 2^k (diff = |k-j|) at odd prime q.
+
+    Resonant case (2^diff ≡ ±1 mod q):
+        phi_q = q*(2q-3) / (2*(q-1)^2)
+    Non-resonant case:
+        phi_q = q*(q-2) / (q-1)^2   [same as weight-1]
+    """
+    r = pow(2, diff, q)
+    if r == 1 or r == q - 1:
+        return q * (2 * q - 3) / (2 * (q - 1) ** 2)
+    return q * (q - 2) / (q - 1) ** 2
+
+
+def analytic_singular_series_weight2(
+    diff: int,
+    small_primes: list[int] | None = None,
+) -> float:
+    """
+    Partial S_xor product for a weight-2 mask with bit-difference diff,
+    using the exact analytical local-factor formulas.
+
+    Converges (as primes grow) to the true S_xor for such masks.
+    """
+    if small_primes is None:
+        small_primes = [3, 5, 7, 11, 13, 17, 19, 23]
+    S = 1.0
+    for q in small_primes:
+        if q == 2:
+            continue
+        S *= analytic_local_factor_weight2(q, diff)
     return S
 
 

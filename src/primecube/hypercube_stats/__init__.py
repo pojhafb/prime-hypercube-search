@@ -14,6 +14,9 @@ from .singular_series import (
     batch_singular_series,
     obstruction_breakdown,
     add_singular_series,
+    analytic_local_factor_weight1,
+    analytic_local_factor_weight2,
+    analytic_singular_series_weight2,
 )
 
 __all__ = [
@@ -32,4 +35,7 @@ __all__ = [
     "batch_singular_series",
     "obstruction_breakdown",
     "add_singular_series",
+    "analytic_local_factor_weight1",
+    "analytic_local_factor_weight2",
+    "analytic_singular_series_weight2",
 ]
