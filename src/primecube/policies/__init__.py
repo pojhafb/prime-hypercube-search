@@ -6,6 +6,7 @@ from .hamming_policies import (
     UniformRandomPolicy,
 )
 from .hybrid_policy import HybridStandardPlusLearnedPolicy
+from .sieve_aware_policy import SieveAwarePolicy
 from .standard_odd import StandardOddIncrementPolicy
 
 __all__ = [
@@ -14,6 +15,7 @@ __all__ = [
     "LearnedBitOrderPolicy",
     "LowBitFirstPolicy",
     "SearchPolicy",
+    "SieveAwarePolicy",
     "StandardOddIncrementPolicy",
     "UniformRandomPolicy",
 ]

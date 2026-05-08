@@ -8,6 +8,13 @@ from .spectral import SpectralPrimeStats
 from .models import DiscrepancyResult
 from .xor_autocorr import XORAutocorrelation
 from .prime_graph import PrimeInducedGraph
+from .singular_series import (
+    local_factor_xor,
+    singular_series_xor,
+    batch_singular_series,
+    obstruction_breakdown,
+    add_singular_series,
+)
 
 __all__ = [
     "PrimeIndicator",
@@ -20,4 +27,9 @@ __all__ = [
     "DiscrepancyResult",
     "XORAutocorrelation",
     "PrimeInducedGraph",
+    "local_factor_xor",
+    "singular_series_xor",
+    "batch_singular_series",
+    "obstruction_breakdown",
+    "add_singular_series",
 ]
