@@ -6,6 +6,8 @@ from .edge_counts import PrimeEdgeCounter
 from .fourier import WalshFourierAnalyzer
 from .spectral import SpectralPrimeStats
 from .models import DiscrepancyResult
+from .xor_autocorr import XORAutocorrelation
+from .prime_graph import PrimeInducedGraph
 
 __all__ = [
     "PrimeIndicator",
@@ -16,4 +18,6 @@ __all__ = [
     "WalshFourierAnalyzer",
     "SpectralPrimeStats",
     "DiscrepancyResult",
+    "XORAutocorrelation",
+    "PrimeInducedGraph",
 ]
