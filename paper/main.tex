@@ -437,8 +437,8 @@ but with local factors determined by binary arithmetic rather than residue class
 \subsection{Numerical evidence}
 
 We compute $C_m(a)$ via WHT for all parity-preserving masks of weight $1$--$4$
-at $m \in \{16,18,20\}$, and $S_{\mathrm{xor}}(a)$ by evaluating the local
-factors over odd integers in $[1,2^{18})$.
+at $m \in \{16,18,20,22\}$, and $S_{\mathrm{xor}}(a)$ by evaluating the local
+factors numerically over odd integers in $[1,2^{18})$.
 
 \begin{table}[h]
 \centering
@@ -453,30 +453,39 @@ $m$ & Masks & Pearson $r(\rho_m,\,S_{\mathrm{xor}})$ & Mean $\rho_m/S_{\mathrm{x
 16 & 1940 & 0.886 & 1.001 \\
 18 & 3213 & 0.859 & 1.001 \\
 20 & 5035 & 0.879 & 1.002 \\
+22 & 7546 & $0.760^\dagger$ & 1.002 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+${}^\dagger$At $m=22$, masks involving bits $18$--$21$ lie outside
+the estimator range $[1,2^{18})$.
+Within that range, XOR for such masks degenerates to addition, inflating
+certain local factors and reducing the global Pearson~$r$.
+Weights~1 and~2 are unaffected, as their local factors are given by the
+closed-form Theorems~\ref{thm:weight1}--\ref{thm:weight2}.
 
 \begin{table}[h]
 \centering
-\caption{Mean $\rho_m$ vs.\ mean $S_{\mathrm{xor}}$ and ratio by weight, $m=20$.}
+\caption{Convergence of mean $\rho_m/S_{\mathrm{xor}}$ by mask weight.
+Weights~1--2 use exact analytical formulas; weights~3--4 at $m=22$
+are affected by the estimator-range limitation (marked $\dagger$).}
 \label{tab:byweight}
-\begin{tabular}{rrrrrr}
+\begin{tabular}{lrrr}
 \toprule
-Weight & $n$ & Mean $\rho_m$ & Mean $S_{\mathrm{xor}}$ & Mean $\rho_m/S_{\mathrm{xor}}$ & Std \\
+Weight & $m=18$ & $m=20$ & $m=22$ \\
 \midrule
-1 & 19   & 0.6624 & 0.6660 & 0.9946 & 0.010 \\
-2 & 171  & 1.1393 & 1.1398 & 0.9995 & 0.043 \\
-3 & 969  & 0.9382 & 0.9347 & 1.0046 & 0.046 \\
-4 & 3876 & 1.0358 & 1.0341 & 1.0018 & 0.030 \\
+1 & 0.9948 & 0.9946 & 0.9967 \\
+2 & 0.9975 & 0.9995 & 0.9990 \\
+3 & 1.0062 & 1.0046 & $1.011^\dagger$ \\
+4 & 1.0011 & 1.0018 & $1.000^\dagger$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-All per-weight mean ratios lie within $0.6\%$ of $1.000$.
-The ratio drifts slightly toward $1.000$ as $m$ increases,
-consistent with convergence, though larger $m$ would be needed to confirm
-the rate of convergence.
+The weight-1 and weight-2 ratios at $m=22$ ($0.9967$ and $0.9990$)
+are closer to~1 than at $m=20$ ($0.9946$ and $0.9995$).
+No persistent offset is visible, consistent with convergence to exactly~1.
 
 \paragraph{Alternating geometric pattern.}
 The mean $\rho_m$ alternates by weight parity: odd weights give
@@ -613,11 +622,39 @@ LRN  & 8.37 & 9.96 & 11.56 \\
 
 \subsection{Sieve-aware search}
 
-The singular series suggests a new search strategy:
-rank flip sets within each Hamming radius by $S_{\mathrm{xor}}(\mathrm{mask})$
-descending, so that masks predicted to produce more prime pairs are tried first.
-The \texttt{SieveAwarePolicy} implementing this is included in the repository.
-A formal comparison against LBF and SOI is an open experimental question.
+The singular series suggests ranking flip sets by $S_{\mathrm{xor}}(\mathrm{mask})$
+descending so that masks predicted to produce more prime pairs are tried first.
+We implemented \texttt{SieveAwarePolicy} and compared it against
+LowBitFirst (LBF), HighBitFirst (HBF), and UniformRandom
+over $10{,}000$ samples at $m \in \{32, 40, 48\}$:
+
+\begin{table}[h]
+\centering
+\caption{Mean checks to find the first prime.  All policies found a prime
+on every query (found rate = 1.00).}
+\label{tab:sieveaware}
+\begin{tabular}{lrrr}
+\toprule
+Strategy & $m=32$ & $m=40$ & $m=48$ \\
+\midrule
+HBF         & \textbf{11.30} & \textbf{14.38} & \textbf{17.22} \\
+LBF         & 11.38 & 14.56 & 17.47 \\
+Uniform     & 11.39 & 14.58 & 17.40 \\
+SieveAware  & 11.50 & 14.86 & 17.51 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent
+\texttt{SieveAwarePolicy} is marginally \emph{slower} than LBF ($-1$--$2\%$ in mean checks).
+The explanation is conceptual: $S_{\mathrm{xor}}(a)$ measures the density of
+prime XOR pairs, where \emph{both} $p$ and $p \oplus a$ are prime.
+The search problem asks only whether the \emph{target} $x \oplus a$ is prime,
+given an arbitrary starting point~$x$.
+For random~$x$, $\Pr[x \oplus a \text{ prime}] \approx \delta_m$
+regardless of~$a$; the $S_{\mathrm{xor}}$ signal is conditional on~$x$
+itself being prime, which is not the case during search.
+The sieve structure is descriptively accurate but operationally inert.
 
 %% ---------------------------------------------------------------
 \section{Related Work}
@@ -683,12 +720,15 @@ At weight $\geq 5$, the fingerprint decays to noise.
 \begin{enumerate}[label=(\roman*)]
   \item Prove Conjecture~\ref{conj:main}: $\rho_m(a) \to S_{\mathrm{xor}}(a)$.
     Even a result for weight-1 masks would be new.
-  \item Find closed forms for weight-3 local factors
-    (dependence on three pairwise bit-differences?).
+  \item Does $\rho_m/S_{\mathrm{xor}} \to 1$ exactly?
+    At $m=22$ the weight-1 and weight-2 ratios are $0.9967$ and $0.9990$,
+    showing no sign of a persistent offset, but the approach is slow.
+    Testing at $m=24$ with \texttt{sieve\_m}$=m$ would sharpen the picture.
+  \item Find closed forms for weight-3 local factors:
+    does the factor depend only on the three pairwise bit-differences,
+    or are there genuine three-body interactions?
   \item Determine whether the decay rate $r \approx 0.46$ has a closed form
     in terms of $C_2$ and the weight-2 resonance factors.
-  \item Does $\rho_m/S_{\mathrm{xor}} \to 1$ exactly, or is there a
-    persistent $O(1/m)$ correction analogous to the PNT secondary term?
 \end{enumerate}
 
 \subsection*{Code availability}

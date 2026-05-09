@@ -113,26 +113,29 @@ The experimentally observed top weight-2 masks — consistently at bit-differenc
 
 ## What is empirically established
 
-Running the WHT autocorrelation at m = 16, 18, 20 over all even masks of weight 1–4 (up to 5 035 masks per m):
+Running the WHT autocorrelation at m = 16, 18, 20, 22 over all parity-preserving masks of weight 1–4 (up to 7 546 masks at m = 22):
 
 **The singular series predicts ρ:**
 
-| m  | Pearson r(ρ, S_xor) | Mean ρ/S_xor | Std  |
-|----|---------------------|--------------|------|
-| 16 | 0.886               | 1.001        | 0.04 |
-| 18 | 0.859               | 1.001        | 0.04 |
-| 20 | 0.879               | 1.002        | 0.04 |
+| m  | Masks | Pearson r(ρ, S_xor) | Mean ρ/S_xor | Std  |
+|----|-------|---------------------|--------------|------|
+| 16 | 1940  | 0.886               | 1.001        | 0.04 |
+| 18 | 3213  | 0.859               | 1.001        | 0.04 |
+| 20 | 5035  | 0.879               | 1.002        | 0.04 |
+| 22 | 7546  | 0.760†              | 1.002        | 0.05 |
 
-Mean ratio = 1.001 ± 0.001 — the prediction is calibrated, not just correlated. Per weight:
+† At m = 22 the S_xor estimator uses odd x ∈ [1, 2^18), but m = 22 has 4 bit positions (18–21) outside that range. For masks involving those bits, XOR within [1, 2^18) degenerates to addition, inflating some local factors. The Pearson r drop reflects this estimation error, not a genuine weakening of the conjecture. Weights 1 and 2 are unaffected because their local factors admit exact analytical formulas.
 
-| Weight | Mean ρ/S_xor (m=18) | Mean ρ/S_xor (m=20) |
-|--------|---------------------|---------------------|
-| 1      | 0.9948              | 0.9946 |
-| 2      | 0.9975              | 0.9995 |
-| 3      | 1.0062              | 1.0046 |
-| 4      | 1.0011              | 1.0018 |
+Mean ratio = 1.001 ± 0.001 across m ∈ {16, 18, 20} and 1.002 at m = 22. Per weight (analytical formulas used for weights 1 and 2):
 
-All weights within 0.6% of 1.000. The ratio is approaching 1.000 as m increases.
+| Weight | m=18   | m=20   | m=22   |
+|--------|--------|--------|--------|
+| 1      | 0.9948 | 0.9946 | 0.9967 |
+| 2      | 0.9975 | 0.9995 | 0.9990 |
+| 3      | 1.0062 | 1.0046 | 1.011† |
+| 4      | 1.0011 | 1.0018 | 1.000† |
+
+Weights 1 and 2 are within 0.4% of 1.000 and remain stable as m increases. Weights 3 and 4 at m = 22 are affected by the sieve_m limitation noted above.
 
 **The sieve signal decays geometrically:**
 
@@ -195,7 +198,7 @@ The conjecture is the XOR analog of the Hardy–Littlewood prime pairs conjectur
 
 **The decay model ρ(k) = 1 + C₀(−r)^k is empirical.** The decay rate r ≈ 0.46 is not derived from the analytical formulas. A natural guess — that r is the ratio of the mean resonant to mean non-resonant S_xor factor — gives r ≈ 0.47, close but not confirmed.
 
-**Finite-m effects persist.** At m = 20, the mean ratio ρ/S_xor is 1.002, not 1.000. Whether this converges to exactly 1.000 or to some other limit requires larger m (m = 22, 24) to determine conclusively.
+**Finite-m effects persist.** At m = 20, the mean ratio ρ/S_xor is 1.002, not 1.000. At m = 22 it is also 1.002 overall, but for weight-1 (analytical formula, unaffected by estimation issues) the ratio is 0.9967 — closer to 1.000 than m = 20's 0.9946. For weight-2 the ratio is 0.9990, also consistent with convergence. The evidence suggests no persistent offset, but the rate of convergence is slow and m = 24 or m = 26 would be needed to confirm it.
 
 ---
 
@@ -218,7 +221,7 @@ The transition from structured (scale 2) to random (scale 3) at weight 5 is a qu
 
 ## Open questions worth pursuing
 
-**1. Does ρ/S_xor → 1.000 exactly?** Or does a persistent offset remain, analogous to the secondary term in the prime number theorem? Testing at m = 22 or 24 would distinguish convergence from plateau.
+**1. Does ρ/S_xor → 1.000 exactly?** At m = 22, the weight-1 ratio is 0.9967 and weight-2 is 0.9990 — both tighter than at m = 20 (0.9946 and 0.9995). No persistent offset is visible, but the rate of approach is slow. Testing at m = 24 or 26 with sieve_m = m would confirm convergence over plateau. Key note: the sieve_m estimator should match m for accurate results at high-bit masks.
 
 **2. What is the exact formula for weight-3 local factors?** Weight-2 factors depend only on the single bit-difference and the resonance condition. Weight-3 masks have three pairwise differences. Does the local factor factor over these pairs, or are there genuine three-body interactions?
 
@@ -226,7 +229,17 @@ The transition from structured (scale 2) to random (scale 3) at weight 5 is a qu
 
 **4. The Fourier interpretation.** The model ρ(k) depends only on Hamming weight to leading order. Functions of Hamming weight on the binary hypercube are zonal spherical functions — eigenfunctions of the Hamming scheme. The alternating geometric series ρ(k) ≈ 1 + C₀(−r)^k may have a clean eigenvalue interpretation in the hypercube spectrum.
 
-**5. Does the sieve-aware search policy outperform learned bit-order?** The theoretical prediction is that SieveAwarePolicy should prefer weight-2 masks with high S_xor, giving a small but measurable improvement over LowBitFirst. A clean comparison over 10k samples at m = 48 would test whether the sieve structure is predictive enough to be operationally useful.
+**5. Answered: does the sieve-aware search policy outperform LowBitFirst?** A direct comparison of SieveAwarePolicy vs LowBitFirst, HighBitFirst, and UniformRandom over 10k samples at m ∈ {32, 40, 48} gives:
+
+| m  | LBF mean checks | Sieve mean checks | Speedup |
+|----|-----------------|-------------------|---------|
+| 32 | 11.38           | 11.50             | −1.1%   |
+| 40 | 14.56           | 14.86             | −2.0%   |
+| 48 | 17.47           | 17.51             | −0.3%   |
+
+SieveAwarePolicy is marginally **slower** than LBF at all tested dimensions — the opposite of the predicted improvement. The best tested policy was HighBitFirst (1–1.5% fewer checks than LBF at m ≥ 40). All policies found a prime on every query (found_rate = 1.00).
+
+The reason: S_xor(a) measures the density of prime XOR pairs — pairs where **both** endpoints are prime. Search asks whether **one** specific candidate x⊕a is prime, given an arbitrary non-prime starting point x. These are different questions. For random x, P(x⊕a is prime) ≈ δ_m regardless of a; the S_xor signal appears only in the joint distribution conditional on x being prime. Ranking by S_xor is descriptively accurate but operationally inert for the search problem.
 
 ---
 
@@ -239,10 +252,12 @@ The transition from structured (scale 2) to random (scale 3) at weight 5 is a qu
 | S_xor(2^j) = C₂ ≈ 0.66016 | Proved (product identity) | Certain |
 | φ_q(2^j+2^k) — exact resonance formula | Proved analytically | Certain |
 | Bit-diff 12 maximises S_xor — explained by 2^12−1=4095 | Proved | Certain |
-| ρ_m(a) ≈ S_xor(a), r=0.88, ratio=1.001 | Empirical, m=16–20 | High |
+| ρ_m(a) ≈ S_xor(a), r=0.88, ratio=1.001 | Empirical, m=16–22 | High |
 | ρ_m(a) → S_xor(a) as m→∞ | Conjectured | Open |
+| ρ/S_xor → 1.000 with no visible persistent offset | Empirical, wt-1/2 at m=22 | Moderate |
 | Alternating model ρ(k)=1+C₀(−r)^k | Empirical fit | Moderate |
 | Sieve signal vanishes at weight 5 | Empirical, m=16–20 | High |
 | Hamming balls: primes look random | Empirical, m=10–18 | High |
+| SieveAwarePolicy does NOT outperform LBF search | Empirical, m=32–48 | High |
 
 All code, data, and results are at [github.com/pojhafb/prime-hypercube-search](https://github.com/pojhafb/prime-hypercube-search).

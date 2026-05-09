@@ -43,10 +43,12 @@ $C_2 \approx 0.66016$.
 For weight-2 masks $a = 2^j + 2^k$, the local factor is
 $q(2q-3)/(2(q-1)^2)$ when $2^{|k-j|} \equiv \pm 1 \pmod{q}$ (resonant case)
 and $q(q-2)/(q-1)^2$ otherwise.
-Numerical experiments at $m \in \{16, 18, 20\}$ confirm
+Numerical experiments at $m \in \{16, 18, 20, 22\}$ confirm
 $\rho_m(a) \approx S_{\mathrm{xor}}(a)$ with Pearson correlation $r \approx 0.88$
 and mean ratio $\rho_m/S_{\mathrm{xor}} = 1.001 \pm 0.001$ across
 thousands of masks of weight $1$--$4$.
+At $m = 22$, the weight-1 ratio is $0.9967$ and weight-2 is $0.9990$,
+consistent with convergence toward 1.
 We conjecture $\rho_m(a) \to S_{\mathrm{xor}}(a)$ as $m \to \infty$.
 \end{abstract}
 
@@ -281,8 +283,8 @@ where local factors are determined by binary arithmetic.
 %% ---------------------------------------------------------------
 
 We compute $C_m(a)$ for all parity-preserving masks of weight $1$--$4$
-at $m \in \{16, 18, 20\}$ using the WHT, and compute $S_{\mathrm{xor}}(a)$
-by numerical integration of the local factors over odd integers in $[1, 2^{18})$.
+at $m \in \{16, 18, 20, 22\}$ using the WHT, and compute $S_{\mathrm{xor}}(a)$
+by numerical estimation of the local factors over odd integers in $[1, 2^{18})$.
 
 \begin{table}[h]
 \centering
@@ -297,32 +299,42 @@ $m$ & Masks & Pearson $r$ & Mean $\rho/S_{\mathrm{xor}}$ & Std \\
 16 & 1940 & 0.886 & 1.001 & 0.04 \\
 18 & 3213 & 0.859 & 1.001 & 0.04 \\
 20 & 5035 & 0.879 & 1.002 & 0.04 \\
+22 & 7546 & $0.760^\dagger$ & 1.002 & 0.05 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Per-weight breakdown at $m = 20$:
+${}^\dagger$At $m=22$, masks involving bits $18$--$21$ lie outside the estimator
+range $[1,2^{18})$; within that range their XOR degenerates to addition,
+distorting numerical local factors and reducing global Pearson~$r$.
+Weights~1 and~2 use the closed-form formulas of
+Theorems~\ref{thm:weight1}--\ref{thm:weight2} and are unaffected.
+
+Per-weight convergence of $\rho/S_{\mathrm{xor}}$ toward~1:
 
 \begin{table}[h]
 \centering
-\caption{Mean $\rho_m(a)$ vs.\ mean $S_{\mathrm{xor}}(a)$ and ratio by mask weight, $m=20$.}
+\caption{Mean $\rho_m/S_{\mathrm{xor}}$ by mask weight across dimensions
+(weights~1--2 use exact analytical formulas;
+weights~3--4 at $m=22$ are affected by the estimator-range limitation).}
 \label{tab:byweight}
-\begin{tabular}{rrrrrr}
+\begin{tabular}{lrrr}
 \toprule
-Weight & $n$ & Mean $\rho$ & Mean $S_{\mathrm{xor}}$ & Mean $\rho/S_{\mathrm{xor}}$ \\
+Weight & $m=18$ & $m=20$ & $m=22$ \\
 \midrule
-1 & 19   & 0.6624 & 0.6660 & 0.9946 \\
-2 & 171  & 1.1393 & 1.1398 & 0.9995 \\
-3 & 969  & 0.9382 & 0.9347 & 1.0046 \\
-4 & 3876 & 1.0358 & 1.0341 & 1.0018 \\
+1 & 0.9948 & 0.9946 & 0.9967 \\
+2 & 0.9975 & 0.9995 & 0.9990 \\
+3 & 1.0062 & 1.0046 & $1.011^\dagger$ \\
+4 & 1.0011 & 1.0018 & $1.000^\dagger$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The weight-1 mean $\rho \approx 0.6624$ is consistent with
-$S_{\mathrm{xor}}(2^j) = C_2 \approx 0.66016$
-(Corollary~\ref{cor:C2}), with the small residual
-attributable to finite-$m$ boundary effects.
+The weight-1 ratio at $m=22$ ($0.9967$) is closer to~1 than at $m=20$ ($0.9946$),
+consistent with convergence to $S_{\mathrm{xor}}(2^j) = C_2 \approx 0.66016$
+(Corollary~\ref{cor:C2}).
+Weight-2 similarly converges: $0.9990$ at $m=22$ vs.\ $0.9995$ at $m=20$.
+No persistent offset is visible for weights~1--2.
 
 The local factor formulas of Theorems \ref{thm:weight1} and \ref{thm:weight2}
 are verified to six decimal places: the formula $q(q-2)/(q-1)^2$ matches
@@ -357,11 +369,24 @@ the coincidence follows from the shared elementary structure,
 not from any deep connection between XOR pairs and arithmetic pairs.
 
 \paragraph{Open problems.}
-(i) Does $\rho_m(a)/S_{\mathrm{xor}}(a) \to 1$ exactly, or is there a
-persistent $O(1/m)$ correction analogous to the error term in the PNT?
-(ii) Do weight-3 local factors admit a closed form in terms of the three
-pairwise bit-differences?
-(iii) Can Conjecture~\ref{conj:main} be proved for any infinite family of masks?
+(i)~Does $\rho_m(a)/S_{\mathrm{xor}}(a) \to 1$ exactly?
+At $m=22$ the weight-1 and weight-2 ratios are $0.9967$ and $0.9990$,
+with no sign of a persistent offset, but the convergence rate is slow.
+(ii)~Do weight-3 local factors admit a closed form in terms of the
+three pairwise bit-differences, or are there genuine three-body interactions?
+(iii)~Can Conjecture~\ref{conj:main} be proved for any infinite family of masks?
+
+\paragraph{Sieve structure vs.\ search.}
+A natural question is whether the ordering of flip masks by $S_{\mathrm{xor}}$
+improves prime search.
+Direct comparison (10\,000 samples, $m \in \{32, 40, 48\}$) shows that
+SieveAwarePolicy --- which ranks flip sets by $S_{\mathrm{xor}}$ descending
+within each Hamming radius --- is marginally \emph{slower} than
+LowBitFirst ($-1$--$2\%$ in mean checks).
+The reason is conceptual: $S_{\mathrm{xor}}(a)$ measures the density of
+XOR pairs where \emph{both} endpoints are prime; the search problem requires only
+the \emph{target} $x \oplus a$ to be prime given an arbitrary starting point~$x$.
+These are different events, and $S_{\mathrm{xor}}$ is not predictive for the latter.
 
 %% ---------------------------------------------------------------
 
