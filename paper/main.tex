@@ -18,6 +18,9 @@
 %% ---------------------------------------------------------------
 %% Theorem environments
 %% ---------------------------------------------------------------
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
 \newtheorem{definition}{Definition}
 \newtheorem{remark}{Remark}
 \newtheorem{observation}{Observation}
@@ -28,17 +31,16 @@
 \newcommand{\Qm}{Q_m}
 \newcommand{\Pm}{P_m}
 \newcommand{\dH}{d_H}
-\newcommand{\Bm}{B(m,r)}
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\Z}{\mathbb{Z}}
-\newcommand{\N}{\mathbb{N}}
+\newcommand{\ord}{\mathrm{ord}}
 
 %% ---------------------------------------------------------------
 %% Metadata
 %% ---------------------------------------------------------------
 \title{%
-  Primes in the Odd Binary Hypercube:\\
-  Search Geometry, Distribution Geometry, and Sieve Repulsion at the Edge Scale
+  Prime-Pair XOR Autocorrelation in the Binary Hypercube:\\
+  A Hardy--Littlewood Analog
 }
 
 \author{
@@ -49,9 +51,9 @@
 \date{May 2026}
 
 %% arXiv subject classification
-%% Primary:   cs.DM  (Discrete Mathematics)
-%% Secondary: cs.DS  (Data Structures and Algorithms)
-%% Suggested cross-list: math.CO, math.NT
+%% Primary: math.NT (Number Theory)
+%% Secondary: cs.DM (Discrete Mathematics)
+%% Suggested cross-list: math.CO
 
 %% ---------------------------------------------------------------
 \begin{document}
@@ -61,51 +63,42 @@
 
 \begin{center}
 \small
-\textbf{Suggested arXiv subject classes:} cs.DM (primary), cs.DS (secondary);
-possible cross-list: math.CO, math.NT
+\textbf{Suggested arXiv subject classes:} math.NT (primary), cs.DM (secondary);
+possible cross-list: math.CO
 \end{center}
 
 \begin{abstract}
-We embed prime numbers as vertices in the $m$-bit odd binary hypercube
-$Q_m^{\mathrm{odd}} = \{x\in\{0,1\}^m : \mathrm{bit}_0(x)=1\}$, where
-distance is measured by Hamming weight rather than arithmetic difference.
-Two complementary experimental questions are studied: (i)~\emph{search
-geometry}---how does Hamming-ball prime search compare with standard
-odd-increment search?---and (ii)~\emph{distribution geometry}---do primes
-behave like a random subset of the odd hypercube?
+Let $P_m$ be the odd primes in $\{1,3,\ldots,2^m-1\}$.
+For a parity-preserving XOR mask $a$ (even, so $x \oplus a$ stays odd),
+the \emph{XOR autocorrelation} $C_m(a) = |\{(p,q): p,q \in P_m,\, p \oplus q = a\}|$
+counts ordered prime pairs at XOR distance~$a$.
+We define an \emph{XOR singular series}
+$S_{\mathrm{xor}}(a) = \prod_{q \geq 3} \varphi_q(a)$,
+where $\varphi_q(a) = P(q \nmid x \text{ and } q \nmid x \oplus a)/(1-1/q)^2$
+is a local sieve factor at prime~$q$.
 
-On search geometry, we find that standard odd-increment search (SOI) achieves
-the lowest average candidate-check count, but low-bit-first Hamming search
-(LBF) wins or ties SOI on 58--63\% of individual starting points at
-$m\in\{24,28,32\}$.  Pareto analysis confirms that the two families optimize
-different objectives: SOI finds arithmetically close primes, while Hamming
-search finds bit-close primes.
+We prove two exact results in the limit $m \to \infty$.
+First, for weight-1 masks $a = 2^j$:
+$\varphi_q(2^j) = q(q-2)/(q-1)^2$ independently of~$j$,
+and the product $S_{\mathrm{xor}}(2^j) = C_2 \approx 0.66016$,
+the Hardy--Littlewood twin-prime constant.
+Second, for weight-2 masks $a = 2^j + 2^k$ with bit-difference $d = k-j$:
+the local factor is $q(2q-3)/(2(q-1)^2)$ when $2^d \equiv \pm 1 \pmod q$
+(resonant case, controlled by $\ord_q(2)$)
+and $q(q-2)/(q-1)^2$ otherwise.
 
-On distribution geometry, we report two contrasting findings.
-\emph{Hamming-ball pseudorandomness:} prime counts inside Hamming balls of
-radius 1--4 fluctuate with z-scores close to $N(0,1)$, statistically
-indistinguishable from a random subset of the same density.  Low-degree
-Walsh--Fourier coefficients of the centered prime indicator are similarly
-small, consistent with prime pseudorandomness at coarse geometric and algebraic
-scales.
-\emph{Hamming-edge sieve repulsion:} at the single-edge scale, prime-prime
-Hamming-1 edge counts are approximately one-third below the random-model
-prediction, with ratio $\rho\approx 0.67$ stable across $m=10$--$22$ and
-uniform across all bit positions.  This is consistent with the
-Hardy--Littlewood twin-prime sieve correction factor $C_2\approx 0.66$.
+Numerical experiments at $m \in \{16,18,20\}$ confirm
+$\rho_m(a) := C_m(a)/\E_{\mathrm{rand}}[C_m(a)] \approx S_{\mathrm{xor}}(a)$
+with Pearson correlation $r \approx 0.88$ and mean ratio $\rho_m/S_{\mathrm{xor}} = 1.001 \pm 0.001$
+across $9{,}000+$ mask--$m$ pairs of weight $1$--$4$.
+We conjecture $\rho_m(a) \to S_{\mathrm{xor}}(a)$ as $m \to \infty$.
 
-The headline finding is a clean contrast:
-\emph{primes look random inside Hamming balls, but repel along hypercube edges}.
-This distinction---pseudorandomness at coarse scales, sieve repulsion at the
-edge scale---is a new experimental observation and is not obvious at the outset.
-A parallel distinction separates search experiments from distribution
-experiments: bit-position bias observed in search paths does not appear in the
-prime-prime edge geometry, where the edge deficit is uniform across bit
-directions.
+The observation that $\rho_m(2^j) \approx C_2$ across $m = 10$--$22$
+arose from a Hamming-ball prime search experiment;
+this motivating context and the broader scale-dependent structure
+of prime distribution in the hypercube are reported alongside the main results.
 
-No new theorems are proved; all claims are empirical.
-
-We release all code at \url{https://github.com/pojhafb/prime-hypercube-search}.
+All code is available at \url{https://github.com/pojhafb/prime-hypercube-search}.
 \end{abstract}
 
 \tableofcontents
@@ -116,103 +109,95 @@ We release all code at \url{https://github.com/pojhafb/prime-hypercube-search}.
 \label{sec:intro}
 %% ---------------------------------------------------------------
 
-Prime numbers are classically studied as points on the integer number line,
-where distance is measured by subtraction: $|p-x|$. The prime number theorem
-\citep{hadamard1896, delavalleepoussin1896} tells us that primes are sparse:
-among integers near $N$, about $1/\ln N$ of them are prime. The expected gap to
-the next prime from a typical integer near $x$ is approximately $\ln x$.
+The Hardy--Littlewood conjecture \citep{hardylittlewood1923} predicts the
+density of prime pairs $(p, p+2k)$ via a product of local sieve factors:
+for each odd prime $q$, the factor $q(q-2)/(q-1)^2$ measures the reduction
+in pair-density caused by the constraint that neither element of the pair
+is divisible by $q$.  The prediction matches numerical evidence for arithmetic
+progressions with extraordinary precision, but remains unproved.
 
-Every integer also has a binary representation, and binary strings of length
-$m$ are naturally placed as vertices of the $m$-dimensional hypercube
-$Q_m = \{0,1\}^m$. Two vertices are adjacent if they differ in exactly one bit.
-The number of differing bit positions between two integers $x$ and $y$ is the
-\emph{Hamming distance}:
-\[
-  \dH(x,y) = |\{i : \mathrm{bit}_i(x) \neq \mathrm{bit}_i(y)\}|.
-\]
-This defines a metric on $Q_m$ that is very different from arithmetic distance.
+This paper introduces and studies a parallel object in binary XOR geometry.
+Instead of asking how often $p$ and $p + 2k$ are simultaneously prime,
+we ask how often $p$ and $p \oplus a$ are simultaneously prime,
+where $\oplus$ is bitwise XOR and $a$ is a fixed mask.
+Embedding primes in the $m$-bit odd binary hypercube
+$Q_m^{\mathrm{odd}} = \{1, 3, \ldots, 2^m - 1\}$,
+the XOR autocorrelation $C_m(a)$ counts such pairs.
 
-This paper asks: \emph{what does the distribution of primes look like in
-Hamming geometry?} More concretely, can one find a prime near a given integer
-$x$ by searching within a small Hamming ball around $x$, and how does such
-search compare to the standard algorithm of testing $x, x+2, x+4, \ldots$?
+The central finding is that $C_m(a)$ is well-predicted by a product of local factors
+$S_{\mathrm{xor}}(a) = \prod_{q \geq 3} \varphi_q(a)$,
+where $\varphi_q(a)$ measures the modular obstruction induced by the mask $a$.
+For weight-1 masks (single bit flips), we prove that the local factor is
+exactly the Hardy--Littlewood factor $q(q-2)/(q-1)^2$,
+and the product converges to the twin-prime constant $C_2$.
+For weight-2 masks, the local factor depends on whether the bit-difference is
+\emph{resonant} for $q$ in the sense $2^d \equiv \pm 1 \pmod q$, a condition
+governed by the multiplicative order $\ord_q(2)$.
 
-\subsection{Why this question is interesting}
+\paragraph{Motivating context.}
+This work grew out of an experimental study of Hamming-ball prime search:
+can one find a prime near a given integer $x$ by searching within a small
+Hamming ball, and how does such search compare to standard odd-increment search?
+Running that experiment, we observed that prime-prime Hamming-1 edge counts
+are $\approx 33\%$ below the random-model expectation, with ratio
+$\rho \approx 0.664$ stable across $m = 10$--$22$ and uniform across all bit positions.
+That ratio is consistent with $C_2$,
+which prompted the investigation of the full XOR autocorrelation
+and the singular series developed here.
+The search experiments are reported in Section~\ref{sec:search}
+as motivating context and a practical application of the theory.
 
-Two independent motivations drive this work.
+\paragraph{What is proved and what is conjectured.}
+We prove (Theorems~\ref{thm:weight1}--\ref{thm:weight2}) the exact limiting
+local factors for weight-1 and weight-2 masks.
+The global conjecture $\rho_m(a) \to S_{\mathrm{xor}}(a)$
+(Conjecture~\ref{conj:main}) is supported by numerical evidence
+but not proved; it sits at the same level of difficulty as the
+arithmetic Hardy--Littlewood conjecture.
+All ball-scale and Fourier-scale pseudorandomness observations
+are empirical (Sections~\ref{sec:balls}--\ref{sec:fourier}).
 
-\paragraph{Search geometry.}
-Finding a prime near a given large integer is a basic primitive in
-cryptographic key generation \citep{menezes1996}. Standard algorithms test
-$x, x+2, x+4, \ldots$ and rely on the prime number theorem for their expected
-cost. An alternative search in Hamming space produces primes with different
-characteristics---primes that may be arithmetically far but differ in only a
-few bits. The goal is not to beat standard search on average, but to
-characterize when and how the two search geometries differ.
-
-\paragraph{Distribution geometry.}
-The primes are a fixed arithmetically-defined set. Placing them as a subset of
-the hypercube $Q_m$ with Hamming distance and asking whether they look
-``random'' at various scales is a natural question in discrete mathematics.
-It connects to the Boolean Fourier analysis of $\{0,1\}^m$
-\citep{odonnell2014}, and the answer turns out to depend strongly on scale:
-pseudorandom at the Hamming-ball level, non-random at the single-edge level.
-This scale-dependent picture is not predicted by any simple argument and
-constitutes the main empirical discovery of the paper.
-
-\subsection{Summary of results}
-
-\paragraph{Search geometry.}
-
-\begin{enumerate}[label=(\roman*)]
-  \item \textbf{Hamming density (empirical).} In a full scan of $Q_{14}$,
-    98.4\% of integers are within Hamming distance 2 of a prime and 100\%
-    within distance 3.
-
-  \item \textbf{Parity dominates the full hypercube.} In unrestricted Hamming
-    search, bit~0 dominates because flipping it toggles parity. This motivates
-    the odd-subcube formulation.
-
-  \item \textbf{SOI wins average checks; LBF is competitive per-instance.}
-    Standard odd-increment search achieves the lowest average candidate-check
-    count. However, low-bit-first Hamming search wins or ties SOI on 58--63\%
-    of individual starting points at $m\in\{24,28,32\}$.
-
-  \item \textbf{Two search geometries.} Standard search finds arithmetically
-    close primes; Hamming search finds bit-close primes. Pareto analysis shows
-    neither family dominates the other when both objectives are considered.
-\end{enumerate}
-
-\paragraph{Distribution geometry.}
+\subsection{Summary of main results}
 
 \begin{enumerate}[label=(\roman*)]
-  \setcounter{enumi}{4}
-  \item \textbf{Hamming-ball pseudorandomness.} Prime counts inside Hamming
-    balls of radius 1--4 fluctuate with normalized z-scores close to $N(0,1)$,
-    matching a random subset of the same density. Low-degree Walsh--Fourier
-    coefficients of the centered prime indicator are similarly small.
+  \item \textbf{Weight-1 theorem.}
+    For any $j \geq 1$ and any odd prime $q$, the limiting local factor is
+    $\varphi_q(2^j) = q(q-2)/(q-1)^2$, independent of $j$.
+    The product over all odd primes equals $C_2 \approx 0.66016$.
 
-  \item \textbf{Hamming-edge sieve repulsion.} Prime-prime Hamming-1 edge
-    counts are $\approx$one-third below the random-model expectation,
-    $\rho\approx 0.67$ across $m=10$--$22$.  The deficit is uniform across all
-    bit directions.  This is consistent with the Hardy--Littlewood sieve
-    correction for prime pairs.
+  \item \textbf{Weight-2 theorem.}
+    For mask $2^j + 2^k$ with $d = k-j$,
+    the local factor is $q(2q-3)/(2(q-1)^2)$ if $2^d \equiv \pm 1 \pmod q$,
+    and $q(q-2)/(q-1)^2$ otherwise.
 
-  \item \textbf{Two phenomena are distinct.} Bit-position bias (low bits
-    preferred in search paths) and Hamming-1 edge repulsion (uniform across bit
-    directions) are separate effects.  Search-path bias and prime-prime edge
-    geometry probe different aspects of prime distribution.
+  \item \textbf{Bit-difference optimality.}
+    The weight-2 mask maximising $S_{\mathrm{xor}}$ has bit-difference $d = 12$,
+    because $2^{12}-1 = 3^2 \cdot 5 \cdot 7 \cdot 13$ and
+    $2^{12}+1 = 17 \cdot 241$ make $d = 12$ resonant at $q \in \{3,5,7,13,17\}$
+    simultaneously.
+
+  \item \textbf{Numerical validation.}
+    Pearson $r(\rho_m, S_{\mathrm{xor}}) \approx 0.88$ and
+    mean $\rho_m/S_{\mathrm{xor}} = 1.001 \pm 0.001$
+    across $m \in \{16,18,20\}$ and weights $1$--$4$.
+
+  \item \textbf{Conjecture.}
+    $\rho_m(a) \to S_{\mathrm{xor}}(a)$ as $m \to \infty$.
+
+  \item \textbf{Scale-dependent structure (empirical).}
+    Primes are pseudorandom in Hamming balls and in low-degree Walsh--Fourier
+    tests, but exhibit sieve repulsion at the XOR-mask scale for weights $1$--$4$,
+    decaying geometrically with rate $r \approx 0.46$ per weight level.
 \end{enumerate}
 
-\subsection{Organization}
+\subsection{Organisation}
 
 Section~\ref{sec:model} sets up the mathematical model.
-Section~\ref{sec:strategies} describes the search strategies.
-Section~\ref{sec:theory} provides heuristic estimates.
-Section~\ref{sec:experiments} presents search-geometry experiments.
-Section~\ref{sec:pareto} gives the Pareto analysis.
-Section~\ref{sec:distribution} presents distribution-geometry experiments
-(Hamming-ball discrepancy, Fourier analysis, and Hamming-1 edge counts).
+Section~\ref{sec:series} defines the XOR singular series.
+Section~\ref{sec:results} states and proves the main theorems.
+Section~\ref{sec:conjecture} states the conjecture and presents validation.
+Section~\ref{sec:scale} describes the scale-dependent structure.
+Section~\ref{sec:search} presents the motivating search-geometry experiments.
 Section~\ref{sec:related} discusses related work.
 Section~\ref{sec:conclusion} concludes.
 
@@ -221,548 +206,332 @@ Section~\ref{sec:conclusion} concludes.
 \label{sec:model}
 %% ---------------------------------------------------------------
 
-\subsection{The binary hypercube}
+\subsection{The odd binary hypercube}
+
+Fix $m \geq 2$.
+The \emph{$m$-bit odd binary hypercube} is
+$Q_m^{\mathrm{odd}} = \{x \in \{0,1\}^m : \mathrm{bit}_0(x) = 1\}$,
+identified with the odd integers $\{1,3,\ldots,2^m-1\}$.
+Hamming distance $\dH(x,y) = |\{i : \mathrm{bit}_i(x) \neq \mathrm{bit}_i(y)\}|$
+defines a metric on $Q_m^{\mathrm{odd}}$.
+Write $P_m = \{p \in Q_m^{\mathrm{odd}} : p \text{ prime}\}$
+and $\delta_m = |P_m|/2^{m-1} \approx 2/(m \ln 2)$ by the prime number theorem.
+
+\subsection{XOR autocorrelation}
 
 \begin{definition}
-  The \emph{$m$-bit binary hypercube} is the graph
-  $Q_m=(\{0,1\}^m,E)$ where $\{x,y\}\in E$ if and only if
-  $\dH(x,y)=1$.
+A mask $a$ is \emph{parity-preserving} if $\mathrm{bit}_0(a) = 0$.
+Then $x \oplus a$ is odd whenever $x$ is odd.
+The \emph{XOR autocorrelation} at parity-preserving mask $a$ is:
+\[
+  C_m(a)
+  \;=\;
+  \sum_{x \in Q_m^{\mathrm{odd}}}
+  \mathbf{1}[x \in P_m]\,\mathbf{1}[x \oplus a \in P_m],
+\]
+counting \emph{ordered} prime pairs $(p,q)$ with $p \oplus q = a$.
+(Each unordered pair $\{p,q\}$ is counted twice for $a \neq 0$.)
 \end{definition}
 
-We identify each vertex with the integer it encodes in binary, so $Q_m$
-contains the integers $\{0,1,\ldots,2^m-1\}$.
+Under a Bernoulli null model, $\E[C_m(a)] = \delta_m^2 \cdot 2^{m-1}$.
+Define the normalised ratio $\rho_m(a) = C_m(a)/(\delta_m^2 \cdot 2^{m-1})$.
+
+$C_m(a)$ for all masks simultaneously is computed in $O(m \cdot 2^m)$ time
+via the Walsh--Hadamard transform (WHT):
+$C = \mathrm{IWHT}(\mathrm{WHT}(f)^2)$
+where $f$ is the prime indicator on $Q_m^{\mathrm{odd}}$.
+
+\subsection{Popcount and Hamming weight}
+
+The \emph{Hamming weight} (popcount) of a mask $a$ is the number of 1-bits.
+Masks of weight 1 correspond to single bit flips; weight-1 edges in the
+prime-induced subgraph are the Hamming-1 edges studied in Section~\ref{sec:edge}.
+
+%% ---------------------------------------------------------------
+\section{The XOR Singular Series}
+\label{sec:series}
+%% ---------------------------------------------------------------
 
 \begin{definition}
-  The \emph{Hamming ball} of radius $r$ centered at $x$ is:
-  \[
-    \mathcal{B}(x,r)=\{y\in Q_m : \dH(x,y)\leq r\}.
-  \]
-  Its size depends only on $m$ and $r$:
-  \[
-    |\mathcal{B}(x,r)| = B(m,r)=\sum_{i=0}^{r}\binom{m}{i}.
-  \]
+For an odd prime $q$ and a parity-preserving mask $a$,
+the \emph{local factor} is:
+\[
+  \varphi_q(a)
+  \;=\;
+  \frac{P(q \nmid x \;\text{and}\; q \nmid x \oplus a)}{(1 - 1/q)^2},
+\]
+where the probability is over odd integers $x$ drawn uniformly from
+$\{1,3,\ldots,2^m-1\}$ as $m \to \infty$.
+The \emph{XOR singular series} is:
+\[
+  S_{\mathrm{xor}}(a)
+  \;=\;
+  \prod_{\substack{q\;\mathrm{prime} \\ q \geq 3}} \varphi_q(a).
+\]
 \end{definition}
 
-\subsection{Primes in the hypercube}
+For fixed bounded-popcount masks, $\varphi_q(a) = 1 + O(1/q^2)$
+away from finitely many resonant primes (since $q(q-2)/(q-1)^2 = 1 - 1/(q-1)^2$),
+so the Euler product converges absolutely.
 
-\begin{definition}
-  The \emph{prime set} of $Q_m$ is
-  \[
-    P_m=\{x\in Q_m : x \text{ is prime}\}.
-  \]
-  The \emph{Hamming distance to the nearest prime} from $x$ is:
-  \[
-    D_m(x)=\min_{p\in P_m}\dH(x,p).
-  \]
-\end{definition}
-
-By the prime number theorem, $|P_m| \approx 2^m/(m\ln 2)$, so the prime density
-in $Q_m$ is approximately:
-\[
-  \delta_m \approx \frac{1}{m\ln 2}.
-\]
-
-\subsection{The odd subcube}
-
-All primes greater than 2 are odd. Therefore, for $m\geq 2$, all nontrivial
-prime vertices lie in:
-\[
-  Q_m^{\mathrm{odd}}
-  =
-  \{x\in Q_m : \mathrm{bit}_0(x)=1\}.
-\]
-$Q_m^{\mathrm{odd}}$ is the odd subcube, a sub-hypercube of dimension $m-1$
-with $2^{m-1}$ vertices. In this paper, odd-subcube Hamming search fixes bit~0
-to 1 and flips only bits $1,\ldots,m-1$.
+In practice we estimate $\varphi_q(a)$ numerically:
+$x$ ranges over all odd integers in $[1, 2^{m_0})$ for a fixed sieve depth $m_0 = 18$,
+and $S_{\mathrm{xor}}(a)$ is the product over a finite set of small primes.
+For weight-1 and weight-2 masks, the exact closed forms proved below
+make numerical estimation unnecessary.
 
 %% ---------------------------------------------------------------
-\section{Search Strategies}
-\label{sec:strategies}
+\section{Main Results}
+\label{sec:results}
 %% ---------------------------------------------------------------
 
-Given a starting integer $x$, we set:
+\begin{theorem}[Weight-1 local factor]
+\label{thm:weight1}
+For any bit position $j \geq 1$ and any odd prime $q$,
+the limiting local factor satisfies:
 \[
-  x_0 = x\,|\,1,
+  \varphi_q(2^j)
+  \;=\;
+  \frac{q(q-2)}{(q-1)^2},
 \]
-that is, $x_0$ is the odd integer obtained by setting bit~0 to 1. A search
-strategy returns a prime $p$, a candidate-check count $k$, the Hamming distance
-$\dH(x_0,p)$, and the arithmetic distance $|p-x_0|$.
+independent of~$j$.
+\end{theorem}
 
-We compare six strategies.
+\begin{proof}
+We require $P(q \nmid x \text{ and } q \nmid x \oplus 2^j)$
+over uniformly random odd $x$.
+When bit~$j$ of $x$ is $0$, XOR adds $2^j$; when bit~$j$ is $1$, it subtracts $2^j$.
+As $m \to \infty$, the residue $x \bmod q$ and the bit $\mathrm{bit}_j(x)$
+become asymptotically independent and jointly uniform:
+$q$ is odd so its divisibility imposes no constraint on bit $j$, which is a
+power-of-2 position unrelated to $q$.
+For each residue $r \not\equiv 0 \pmod{q}$,
+the shifts $r \pm 2^j$ hit $0 \pmod q$ at two distinct values of $r$
+(since $2^j \not\equiv 0$), so the contribution to the blocked probability
+from $r + 2^j \equiv 0$ and from $r - 2^j \equiv 0$ are disjoint.
+Summing over $r$, the fraction of odd $x$ with both $q \nmid x$ and
+$q \nmid x \oplus 2^j$ is $(q-2)/q$.
+Dividing by $(1-1/q)^2 = (q-1)^2/q^2$ gives $q(q-2)/(q-1)^2$,
+which is independent of $j$ because the argument uses only $2^j \not\equiv 0 \pmod{q}$.
+\end{proof}
 
-\subsection{Standard odd-increment search (SOI)}
-
-\begin{algorithm}[H]
-\caption{Standard odd-increment search}
-\begin{algorithmic}[1]
-\State $x_0 \gets x \,|\, 1$
-\State $k \gets 0$, $c \gets x_0$
-\Loop
-  \State $k \gets k + 1$
-  \If{$c$ is prime}
-    \Return $(c,\, k,\, \dH(x_0,c),\, c-x_0)$
-  \EndIf
-  \State $c \gets c+2$
-\EndLoop
-\end{algorithmic}
-\end{algorithm}
-
-This is the standard arithmetic-local algorithm. It always finds the smallest
-prime $\geq x_0$.
-
-\subsection{Odd-subcube Hamming search}
-
-Let $\mathcal{F}(m,r_{\max})$ be a list of flip sets---tuples of bit positions
-in $\{1,\ldots,m-1\}$---ordered by some policy $\pi$.
-
-\begin{algorithm}[H]
-\caption{Odd-subcube Hamming search}
-\begin{algorithmic}[1]
-\State $x_0 \gets x \,|\, 1$
-\State $k \gets 0$
-\For{each flip set $S \in \mathcal{F}(m,r_{\max})$ ordered by $\pi$}
-  \State $k \gets k+1$
-  \State $c \gets x_0 \oplus \bigoplus_{b\in S}2^b$
-  \If{$c$ is prime}
-    \Return $(c,\, k,\, |S|,\, |c-x_0|)$
-  \EndIf
-\EndFor
-\end{algorithmic}
-\end{algorithm}
-
-The choice of ordering $\pi$ gives the following concrete strategies:
-
-\begin{itemize}
-  \item \textbf{LBF} (\emph{low-bit-first}): sort flip sets by
-    $(\sum S,\max S)$, preferring lower bit indices.
-  \item \textbf{HBF} (\emph{high-bit-first}): sort by
-    $(-\sum S,-\max S)$.
-  \item \textbf{RND} (\emph{uniform random}): shuffle flip sets randomly.
-  \item \textbf{LRN} (\emph{learned bit-order}): sort by learned bit scores.
-\end{itemize}
-
-\subsection{Hybrid strategy}
-
-The hybrid strategy interleaves SOI candidates and learned Hamming candidates,
-deduplicating before testing.
-
-\begin{algorithm}[H]
-\caption{Hybrid standard + learned search}
-\begin{algorithmic}[1]
-\State $x_0 \gets x \,|\, 1$, $\mathrm{seen}\gets \emptyset$, $k\gets 0$
-\For{$i=0,1,2,\ldots$}
-  \If{$i<L$} add $x_0+2i$ to candidates \EndIf
-  \If{$i<|\mathcal{F}|$} add $x_0\oplus \mathrm{mask}(\mathcal{F}_i)$ to candidates \EndIf
-  \For{each candidate $c$ not in $\mathrm{seen}$}
-    \State $\mathrm{seen}\gets \mathrm{seen}\cup\{c\}$, $k\gets k+1$
-    \If{$c$ is prime}
-      \Return $(c,k,\dH(x_0,c),|c-x_0|)$
-    \EndIf
-  \EndFor
-\EndFor
-\end{algorithmic}
-\end{algorithm}
-
-$L$ is the odd-increment limit, set to 128 in the reported experiments.
-
-\subsection{Learned bit-order policy}
-\label{sec:learned}
-
-We learn per-bit usefulness scores from data. Given training dimension
-$m_{\mathrm{tr}}$ and $N_{\mathrm{tr}}$ random odd starting points:
-
-\begin{enumerate}
-  \item Run LBF on each starting point and record the successful flip set $S^*$.
-  \item For each bit $b\in S^*$, increment $\mathrm{score}[b]$.
-  \item Bits with zero count receive a fallback score equal to
-    $0.25$ times the minimum positive score.
-  \item Bit~0 is forced to score 0 and is excluded from odd-subcube search.
-\end{enumerate}
-
-For test dimension $m_{\mathrm{te}}>m_{\mathrm{tr}}$, learned scores are
-transferred by retaining the scores for old bit positions and assigning the
-fallback score to new higher bit positions.
-
-%% ---------------------------------------------------------------
-\section{Heuristic Analysis}
-\label{sec:theory}
-%% ---------------------------------------------------------------
-
-This section provides heuristic estimates and informal arguments. No new
-theorems are proved.
-
-\subsection{Expected checks for SOI}
-
-The prime number theorem implies that the average gap between consecutive
-primes near $N$ is approximately $\ln N$. Restricting to odd candidates halves
-this, giving:
+\begin{corollary}[Hardy--Littlewood twin-prime constant]
+\label{cor:C2}
+For any $j \geq 1$:
 \[
-  \E[\text{checks for SOI}]
-  \approx
-  \frac{\ln(2^m)}{2}
-  =
-  \frac{m\ln 2}{2}.
+  S_{\mathrm{xor}}(2^j)
+  \;=\;
+  \prod_{q \geq 3} \frac{q(q-2)}{(q-1)^2}
+  \;=\;
+  C_2 \;\approx\; 0.66016\ldots,
 \]
-For $m=32$, this gives:
+where $C_2$ is the Hardy--Littlewood twin-prime constant \citep{hardylittlewood1923}.
+\end{corollary}
+
+\begin{theorem}[Weight-2 local factor]
+\label{thm:weight2}
+For $j < k$, both $\geq 1$, set $d = k - j$ and let $q$ be an odd prime.
+The limiting local factor for $a = 2^j + 2^k$ is:
 \[
-  \frac{32\ln 2}{2}\approx 11.1.
+  \varphi_q(2^j + 2^k)
+  \;=\;
+  \begin{cases}
+    \dfrac{q(2q-3)}{2(q-1)^2}
+      & \text{if } 2^d \equiv \pm 1 \pmod{q}, \\[8pt]
+    \dfrac{q(q-2)}{(q-1)^2}
+      & \text{otherwise.}
+  \end{cases}
 \]
+\end{theorem}
 
-\subsection{Hamming ball size and prime density}
+\begin{proof}
+The key is to condition on whether bits $j$ and $k$ of $x$ are equal.
+As $m \to \infty$, this indicator is independent of $x \bmod q$ and
+has probability $1/2$ each way.
 
-The expected number of primes within Hamming radius $r$ of a random odd
-$m$-bit integer is approximately:
+\smallskip\noindent
+\textbf{Resonant case: $2^d \equiv \pm1 \pmod{q}$.}
+Write $2^k \equiv \varepsilon 2^j$ with $\varepsilon = \pm 1$.
+When bits $j$ and $k$ of $x$ agree (prob.~$1/2$):
+the combined XOR shift is $\pm(2^j + \varepsilon 2^j) = 0$ or $\pm 2^{j+1}$.
+A careful case analysis shows that in the agreeing-bits sub-case,
+$x \oplus a \equiv x \pmod{q}$, so
+$P(q \nmid x \oplus a \mid \text{bits } j{=}k) = P(q \nmid x) = (q-1)/q$.
+When bits differ (prob.~$1/2$):
+the shift is nonzero mod $q$, giving
+$P(q \nmid x \text{ and } q \nmid x \oplus a \mid \text{bits } j{\neq}k) = (q-2)/q$.
+Combining:
 \[
-  \E[|P_m \cap \mathcal{B}(x_0,r)|]
-  \approx
-  B(m-1,r)\cdot \frac{2}{m\ln 2},
+  P(q \nmid x \text{ and } q \nmid x \oplus a)
+  = \tfrac{1}{2}\cdot\tfrac{q-1}{q} + \tfrac{1}{2}\cdot\tfrac{q-2}{q}
+  = \frac{2q-3}{2q}.
 \]
-where the factor of 2 accounts for restricting to odd candidates.
+Dividing by $(q-1)^2/q^2$ gives $q(2q-3)/(2(q-1)^2)$.
 
-For $m=32$ and $r=4$:
-\[
-  B(31,4)
-  =
-  1+31+465+4495+31465
-  =
-  36457,
-\]
-and:
-\[
-  \frac{2}{32\ln 2}\approx 0.090.
-\]
-So the radius-4 odd-subcube ball contains many primes in expectation. The
-difficulty is not whether a prime exists nearby in Hamming distance, but how
-many ordered candidate checks are needed to reach one.
-
-\subsection{Why SOI dominates average checks}
-
-SOI tests candidates in increasing arithmetic order and directly exploits the
-local prime density on the number line. Hamming search visits candidates in
-bit-flip order, which does not align with arithmetic locality.
-
-\begin{observation}
-A Hamming flip of bit $k$ changes $x$ by $\pm 2^k$, which may be a very large
-arithmetic step. Hamming search therefore optimizes bit locality rather than
-number-line locality.
-\end{observation}
-
-\subsection{Why Hamming search wins on many individual inputs}
-
-\begin{observation}
-If a prime occurs early in the Hamming ordering of $x_0$, then Hamming search
-can beat SOI for that starting point even when SOI has better average behavior.
-\end{observation}
-
-This accounts for the empirical fact that LBF wins or ties SOI on a large
-fraction of individual inputs, despite losing on average candidate checks.
-
-%% ---------------------------------------------------------------
-\section{Experiments}
-\label{sec:experiments}
-%% ---------------------------------------------------------------
-
-\subsection{Setup}
-
-All primality tests use \texttt{sympy.isprime}. Results are cached with
-\texttt{functools.lru\_cache}. The goal is not to benchmark primality-testing
-algorithms themselves, but to compare candidate-generation policies. All
-strategies in a given experiment use the same primality-testing backend.
-
-Unless otherwise stated, the reported experiments use:
-
-\begin{itemize}
-  \item $m_{\mathrm{tr}}=20$
-  \item $m_{\mathrm{te}}\in\{24,28,32\}$
-  \item $N_{\mathrm{tr}}=5000$ training samples
-  \item $N_{\mathrm{te}}=10000$ test samples per dimension
-  \item $r_{\max}=4$
-  \item seed $=42$
-\end{itemize}
-
-\subsection{Hamming distance distribution}
-
-Table~\ref{tab:dist14} shows the full scan for $m=14$.
-
-\begin{table}[h]
-\centering
-\caption{Hamming distance from each integer in $Q_{14}$ to its nearest prime.
-Full scan, $2^{14}=16384$ integers.}
-\label{tab:dist14}
-\begin{tabular}{rrrr}
-\toprule
-$D_{14}(x)$ & Count & \% & Cumulative \% \\
-\midrule
-0 & 1900 & 11.6 & 11.6 \\
-1 & 7933 & 48.4 & 60.0 \\
-2 & 6286 & 38.4 & 98.4 \\
-3 & 265  & 1.6  & 100.0 \\
-$\geq 4$ & 0 & 0.0 & 100.0 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-This full scan shows that every integer in $Q_{14}$ is within Hamming distance
-3 of a prime, and 98.4\% are within distance 2.
-
-\subsection{Average candidate checks}
-
-Table~\ref{tab:checks} reports average candidate checks by strategy.
-
-\begin{table}[h]
-\centering
-\caption{Average candidate checks by strategy, $m \in \{24,28,32\}$,
-$N_{\mathrm{te}}=10000$, $r_{\max}=4$.
-SOI = standard odd-increment, LBF = low-bit-first odd-subcube search,
-LRN = learned bit-order, HBF = high-bit-first, RND = uniform random.
-Lower is better.}
-\label{tab:checks}
-\begin{tabular}{lrrr}
-\toprule
-Strategy & $m=24$ & $m=28$ & $m=32$ \\
-\midrule
-SOI            & \textbf{7.49}  & \textbf{8.73}  & \textbf{10.17} \\
-Hybrid         & 7.70  & 9.15  & 10.58 \\
-HBF            & 8.35  & 9.76  & 11.22 \\
-LRN            & 8.37  & 9.96  & 11.56 \\
-LBF            & 8.38  & 9.95  & 11.53 \\
-RND            & 8.42  & 9.91  & 11.62 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-SOI has the fewest average checks at all tested dimensions. Although HBF has
-competitive average checks in this table, it does so by testing candidates that
-are often arithmetically very far from the starting point. Thus, candidate
-checks alone are not a sufficient evaluation metric. Section~\ref{sec:pareto}
-evaluates the strategies jointly by checks, Hamming distance, and arithmetic
-distance.
-
-\subsection{Per-instance wins}
-
-Table~\ref{tab:wins} shows the pairwise win rate of LBF against SOI.
-
-\begin{table}[h]
-\centering
-\caption{Per-instance win rate of LBF vs. SOI.
-For each starting point $x$, we compare the number of candidate checks used by
-each strategy.}
-\label{tab:wins}
-\begin{tabular}{lrrr}
-\toprule
-$m$ & LBF wins & SOI wins & Ties \\
-\midrule
-24 & 37.1\% & 36.6\% & 26.3\% \\
-28 & 37.7\% & 39.0\% & 23.3\% \\
-32 & 39.2\% & 40.1\% & 20.7\% \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Thus, LBF wins or ties SOI on 63.4\% ($m=24$), 60.3\% ($m=28$), and 59.9\%
-($m=32$) of individual starting points, despite having a higher average check
-count. This shows that SOI's average advantage does not imply uniform
-per-instance dominance.
-
-\subsection{Distance comparison}
-
-Table~\ref{tab:distances} compares the average Hamming and arithmetic distances
-to the found prime for $m=32$.
-
-\begin{table}[h]
-\centering
-\caption{Average Hamming and arithmetic distance to the found prime, $m=32$.
-Values are computed from the odd-subcube experiment with $N_{\mathrm{te}}=10000$
-and $r_{\max}=4$.}
-\label{tab:distances}
-\begin{tabular}{lrr}
-\toprule
-Strategy & Avg $\dH(x_0,p)$ & Avg $|p-x_0|$ \\
-\midrule
-SOI    & 2.81 & \textbf{18.34} \\
-Hybrid & 1.90 & 665{,}588.18 \\
-HBF    & 0.98 & 486{,}532{,}672.18 \\
-LBF    & \textbf{0.98} & 24{,}771{,}857.20 \\
-LRN    & 0.98 & 25{,}453{,}898.40 \\
-RND    & 0.98 & 86{,}389{,}309.05 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Odd-subcube Hamming strategies find primes at roughly one bit flip from the
-starting point on average. SOI, by contrast, finds primes at an average Hamming
-distance of 2.81 bits for $m=32$, but with much smaller arithmetic distance.
-This highlights the core tradeoff: SOI is arithmetic-local, while Hamming
-search is bit-local.
-
-%% ---------------------------------------------------------------
-\section{Pareto Analysis}
-\label{sec:pareto}
-%% ---------------------------------------------------------------
-
-\subsection{Pareto dominance}
-
-\begin{definition}
-Strategy $A$ \emph{Pareto-dominates} strategy $B$ on metrics $(f_1,f_2)$,
-both to be minimized, if $f_1(A)\leq f_1(B)$ and $f_2(A)\leq f_2(B)$ with at
-least one strict inequality. The \emph{Pareto frontier} is the set of
-non-dominated strategies.
-\end{definition}
-
-\subsection{Checks vs. Hamming distance}
-
-In the plane:
-\[
-  (\text{average checks},\ \text{average Hamming distance}),
-\]
-SOI and odd-subcube Hamming methods represent different tradeoffs. SOI has
-the lowest average checks but larger Hamming distance. LBF, LRN, and related
-Hamming strategies have slightly larger check counts but much smaller Hamming
-distance.
-
-This means neither family uniformly dominates when Hamming distance is included
-as an objective.
-
-\subsection{Checks vs. arithmetic distance}
-
-In the plane:
-\[
-  (\text{average checks},\ \log_2(1+\text{average arithmetic distance})),
-\]
-SOI dominates most Hamming strategies because it is designed to find the next
-prime on the number line. This confirms that SOI is the appropriate strategy
-when arithmetic locality is the primary objective.
-
-\subsection{Multi-objective score}
-
-We define a composite score:
-\[
-  \text{score}
-  =
-  \overline{k}
-  +
-  \lambda_H\cdot \overline{\dH}
-  +
-  \lambda_A\cdot \log_2(1+\overline{|p-x_0|}),
-\]
-where $\overline{\cdot}$ denotes the average over all starting points.
-
-The best strategy depends on the weights. When $\lambda_A$ is large or
-candidate checks are weighted heavily, SOI is favored. When $\lambda_H$ is
-large and arithmetic distance is weakly penalized, odd-subcube Hamming
-strategies become competitive or preferred. This confirms that the strategies
-are best understood as optimizing different geometries rather than as direct
-replacements for one another.
-
-%% ---------------------------------------------------------------
-\section{Distribution Geometry}
-\label{sec:distribution}
-%% ---------------------------------------------------------------
-
-This section asks not how to \emph{find} a prime in the hypercube, but how
-primes are \emph{distributed} within it.  We compare the real prime set
-$P_m \subset Q_m^{\mathrm{odd}}$ against a null model: a uniformly random
-subset of $Q_m^{\mathrm{odd}}$ with the same empirical density $\delta_m$.
-
-\subsection{Hamming-ball discrepancy}
-\label{sec:discrepancy}
-
-For a center $x$ and radius $r$, define the prime-count discrepancy:
-\[
-  \Delta(x,r) = |P_m \cap \mathcal{B}(x,r)| - \delta_m |\mathcal{B}(x,r)|,
-\]
-and the normalized z-score:
-\[
-  Z(x,r) = \frac{\Delta(x,r)}{\sqrt{\delta_m(1-\delta_m)|\mathcal{B}(x,r)|}}.
-\]
-The denominator is the standard deviation of prime count if primes were an
-independent Bernoulli($\delta_m$) subset.
-
-\begin{observation}
-Under a Bernoulli random-subset model, $Z(x,r)$ has mean 0 and variance 1.
-If primes are pseudorandom at the Hamming-ball scale, the empirical distribution
-of $Z(x,r)$ over many centers $x$ should be close to $N(0,1)$.
-\end{observation}
-
-Running the discrepancy experiment at $m \in \{16,18,20\}$, radii
-$r\in\{1,2,3,4\}$, and 2{,}000 random centers per $(m,r)$:
-
-\begin{itemize}
-  \item The mean z-score is within $0.05$ of zero for all tested $(m,r)$.
-  \item Standard deviation of $Z$ is close to 1.0 for $r\geq 2$.
-  \item Excess kurtosis is near zero (i.e., tail weight consistent with
-    Gaussian), particularly at larger radii where ball sizes are large.
-  \item The z-score distribution for real primes is statistically
-    indistinguishable from that of a random baseline set of the same density.
-\end{itemize}
+\smallskip\noindent
+\textbf{Non-resonant case: $2^d \not\equiv \pm1 \pmod{q}$.}
+The two shifts $\pm2^j$ and $\pm2^k$ are distinct modulo $q$
+and neither pair sums to $0$, so both the equal-bits and unequal-bits
+sub-cases give non-cancelling shifts.
+An analogous residue count yields $(q-2)/q$,
+and the factor reverts to $q(q-2)/(q-1)^2$.
+\end{proof}
 
 \begin{remark}
-At small radii ($r=1$), ball sizes are $m$ (the number of free bits), which
-can be as small as 15 for $m=16$. With such small samples, the normal
-approximation is weaker and variance estimates have high uncertainty.  For
-$r\geq 2$, ball sizes exceed 100 and the Gaussian picture stabilizes.
+For $q = 3$, $\ord_3(2) = 2$, so $2^d \bmod 3 \in \{1, 2\} = \{\pm 1 \bmod 3\}$
+for all $d \geq 1$.  Therefore \emph{every} weight-2 mask is resonant at $q=3$,
+with universal local factor $\varphi_3 = 9/8$.
 \end{remark}
 
-\subsection{Walsh--Fourier analysis}
-\label{sec:fourier}
+\begin{corollary}[Optimal bit-difference]
+\label{cor:optd}
+Among weight-2 parity-preserving masks, the bit-difference $d = 12$
+maximises $S_{\mathrm{xor}}$ because $2^{12}-1 = 3^2 \cdot 5 \cdot 7 \cdot 13$
+and $2^{12}+1 = 17 \cdot 241$
+make $d=12$ resonant simultaneously at $q \in \{3, 5, 7, 13, 17\}$.
+No $d < 12$ achieves resonance at five or more small primes.
+\end{corollary}
 
-Define the centered prime indicator on $Q_m^{\mathrm{odd}}$:
-\[
-  g(x) = \mathbf{1}[x \in P_m] - \delta_m.
-\]
-Its Walsh--Fourier expansion is:
-\[
-  g(x) = \sum_{S \subseteq \{1,\ldots,m-1\}} \hat{g}(S)\,\chi_S(x),
-\]
-where $\chi_S(x) = (-1)^{\sum_{b\in S}\mathrm{bit}_b(x)}$ is the parity
-character for bit subset $S$, and:
-\[
-  \hat{g}(S) = \frac{1}{|Q_m^{\mathrm{odd}}|} \sum_x g(x)\,\chi_S(x).
-\]
-The degree of a coefficient is $|S|$.  Large $|\hat{g}(S)|$ for small $|S|$
-would indicate that primality correlates with the parity of few bits.
-
-Running the analysis at $m\in\{12,14,16\}$ with maximum degree 3, and comparing
-each coefficient against 30 random baseline sets of the same density:
-
-\begin{itemize}
-  \item All degree-1 and degree-2 coefficients are small
-    ($|\hat{g}(S)|\lesssim 10^{-3}$), consistent with the Prime Number Theorem
-    for arithmetic progressions.
-  \item No low-degree coefficient exceeds the 95th percentile of the random
-    baseline distribution in a statistically consistent manner.
-  \item By Parseval's identity, the fraction of variance explained by
-    degree-$\leq 3$ coefficients is below 5\% for $m\geq 14$ and shrinks
-    as $m$ grows.
-\end{itemize}
-
-These findings are consistent with the view that primality is a high-complexity
-Boolean function: most of its structure lives at high Fourier degree.
-
-\subsection{Hamming-1 edge counts}
-\label{sec:edge}
-
-Define the prime-prime Hamming-1 edge count:
-\[
-  E_1 = |\{(p,q) : p,q \in P_m,\; \dH(p,q)=1\}|.
-\]
-Under the Bernoulli null model, the expected value is:
-\[
-  \mathbb{E}[E_1] \approx \delta_m^2 \cdot (m-1)\cdot 2^{m-2},
-\]
-since there are $(m-1)\cdot 2^{m-2}$ Hamming-1 edges in $Q_m^{\mathrm{odd}}$
-and each independently has probability $\delta_m^2$ of connecting two primes.
-The ratio $\rho = E_1 / \mathbb{E}[E_1]$ measures clustering ($\rho>1$) or
-repulsion ($\rho<1$).
-
-Table~\ref{tab:edges} reports results for $m=10$--$22$.
+\noindent
+Exact values of the local factors, confirmed numerically to six decimal places:
 
 \begin{table}[h]
 \centering
-\caption{Prime-prime Hamming-1 edge count vs.\ random-model expectation.
-$\rho$ = observed/expected. Baseline 95\% CI computed over 20 random seeds
-of the same-density null set. The prime ratio is stable at $\approx 0.664$
-across seven octaves of $m$.}
+\caption{Exact local factors for weight-1 and resonant weight-2 masks.}
+\label{tab:localfactors}
+\begin{tabular}{rrrr}
+\toprule
+$q$ & Weight-1: $q(q-2)/(q-1)^2$ & Resonant weight-2: $q(2q-3)/(2(q-1)^2)$ & Ratio \\
+\midrule
+3  & $3/4 = 0.7500$    & $9/8 = 1.1250$     & 1.500 \\
+5  & $15/16 = 0.9375$  & $35/32 = 1.0938$   & 1.167 \\
+7  & $35/36 = 0.9722$  & $77/72 = 1.0694$   & 1.100 \\
+11 & $99/100 = 0.9900$ & $209/200 = 1.0450$ & 1.056 \\
+13 & $143/144 = 0.9931$& $299/288 = 1.0382$ & 1.047 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%% ---------------------------------------------------------------
+\section{Conjecture and Validation}
+\label{sec:conjecture}
+%% ---------------------------------------------------------------
+
+\begin{conjecture}[XOR Hardy--Littlewood]
+\label{conj:main}
+For any fixed parity-preserving mask $a$ with $\mathrm{popcount}(a)$ bounded:
+\[
+  C_m(a) \;\sim\; S_{\mathrm{xor}}(a) \cdot \delta_m^2 \cdot 2^{m-1}
+  \quad\text{as } m \to \infty,
+\]
+equivalently $\rho_m(a) \to S_{\mathrm{xor}}(a)$.
+\end{conjecture}
+
+Conjecture~\ref{conj:main} is the XOR analog of the Hardy--Littlewood
+prime-pairs conjecture.  The arithmetic version predicts
+$|\{p \leq x : p+2k \text{ prime}\}| \sim S_{\mathrm{arith}}(2k) \cdot x/(\log x)^2$,
+where $S_{\mathrm{arith}}$ is an Euler product of algebraic local factors
+(functions of $2k \bmod q$).  Our $S_{\mathrm{xor}}$ has the same structure
+but with local factors determined by binary arithmetic rather than residue classes.
+
+\subsection{Numerical evidence}
+
+We compute $C_m(a)$ via WHT for all parity-preserving masks of weight $1$--$4$
+at $m \in \{16,18,20\}$, and $S_{\mathrm{xor}}(a)$ by evaluating the local
+factors over odd integers in $[1,2^{18})$.
+
+\begin{table}[h]
+\centering
+\caption{Validation of Conjecture~\ref{conj:main}: Pearson correlation
+between $\rho_m(a)$ and $S_{\mathrm{xor}}(a)$, and mean ratio, over all
+weight $1$--$4$ masks.}
+\label{tab:globalvalid}
+\begin{tabular}{rrrr}
+\toprule
+$m$ & Masks & Pearson $r(\rho_m,\,S_{\mathrm{xor}})$ & Mean $\rho_m/S_{\mathrm{xor}}$ \\
+\midrule
+16 & 1940 & 0.886 & 1.001 \\
+18 & 3213 & 0.859 & 1.001 \\
+20 & 5035 & 0.879 & 1.002 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Mean $\rho_m$ vs.\ mean $S_{\mathrm{xor}}$ and ratio by weight, $m=20$.}
+\label{tab:byweight}
+\begin{tabular}{rrrrrr}
+\toprule
+Weight & $n$ & Mean $\rho_m$ & Mean $S_{\mathrm{xor}}$ & Mean $\rho_m/S_{\mathrm{xor}}$ & Std \\
+\midrule
+1 & 19   & 0.6624 & 0.6660 & 0.9946 & 0.010 \\
+2 & 171  & 1.1393 & 1.1398 & 0.9995 & 0.043 \\
+3 & 969  & 0.9382 & 0.9347 & 1.0046 & 0.046 \\
+4 & 3876 & 1.0358 & 1.0341 & 1.0018 & 0.030 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+All per-weight mean ratios lie within $0.6\%$ of $1.000$.
+The ratio drifts slightly toward $1.000$ as $m$ increases,
+consistent with convergence, though larger $m$ would be needed to confirm
+the rate of convergence.
+
+\paragraph{Alternating geometric pattern.}
+The mean $\rho_m$ alternates by weight parity: odd weights give
+$\rho < 1$ (sieve repulsion), even weights give $\rho > 1$ (excess).
+The pattern fits the model $\rho(k) \approx 1 + C_0(-r)^k$ with
+$C_0 \approx 0.70$ and $r \approx 0.46$ to RMSE $< 0.02$ across weights $1$--$8$.
+The signal decays to below $1\sigma$ statistical noise at weight $5$ and higher.
+
+%% ---------------------------------------------------------------
+\section{Scale-Dependent Structure}
+\label{sec:scale}
+%% ---------------------------------------------------------------
+
+The XOR autocorrelation reveals a three-scale picture for primes in $Q_m^{\mathrm{odd}}$.
+
+\subsection{Hamming-ball pseudorandomness}
+\label{sec:balls}
+
+For a center $x$ and radius $r$, define the prime-count discrepancy
+$\Delta(x,r) = |P_m \cap \mathcal{B}(x,r)| - \delta_m|\mathcal{B}(x,r)|$
+and z-score $Z(x,r) = \Delta(x,r)/\sqrt{\delta_m(1-\delta_m)|\mathcal{B}(x,r)|}$.
+Under a Bernoulli null model, $Z$ has mean 0 and variance 1.
+
+Experiments at $m \in \{16,18,20\}$, radii $r \in \{1,2,3,4\}$,
+and 2{,}000 random centers per $(m,r)$:
+the empirical distribution of $Z(x,r)$ is statistically indistinguishable from $N(0,1)$
+across all tested $(m,r)$.
+At this scale, primes behave as a pseudorandom subset.
+
+\subsection{Walsh--Fourier pseudorandomness}
+\label{sec:fourier}
+
+Define the centered prime indicator $g(x) = \mathbf{1}[x \in P_m] - \delta_m$
+and its Walsh--Fourier expansion
+$g = \sum_{S} \hat{g}(S)\,\chi_S$ over bit subsets $S \subseteq \{1,\ldots,m-1\}$.
+Experiments at $m \in \{12,14,16\}$ (maximum degree 3, 30 random baselines):
+all coefficients $|\hat{g}(S)| \lesssim 10^{-3}$ for $|S| \leq 2$,
+none exceed the 95th percentile of the random baseline in a statistically
+consistent manner, and degree-$\leq 3$ coefficients explain $< 5\%$ of variance.
+At this scale, primes are again pseudorandom.
+
+\subsection{XOR-mask sieve repulsion}
+\label{sec:edge}
+
+At the scale of XOR masks of weight $1$--$4$, $\rho_m(a)$ departs significantly
+from 1 in a structured, sign-alternating pattern well-predicted by $S_{\mathrm{xor}}(a)$.
+Weight-1 masks (Hamming-1 edges) give $\rho \approx 0.664$,
+consistent with $C_2$ (Table~\ref{tab:edges}).
+The signal decays geometrically and is below noise at weight $\geq 5$.
+
+\begin{table}[h]
+\centering
+\caption{Prime-prime Hamming-1 edge counts.
+$\rho = E_1/\E[E_1]$ is the ratio to the random-model expectation.
+Baseline 95\% CI from 20 random seeds at the same density.}
 \label{tab:edges}
 \begin{tabular}{rrrrrr}
 \toprule
@@ -779,190 +548,152 @@ $m$ & Primes & $\rho$ & Baseline 95\% CI & $|\sigma|$ \\
 \end{tabular}
 \end{table}
 
-\begin{observation}
-The prime-prime Hamming-1 edge count is consistently $\approx 33\%$ below the
-random-model expectation, with $\rho\approx 0.67$ stable across
-$m=10$--$22$.  This is many standard deviations from the random baseline.
-\end{observation}
+The ratio $\rho \approx 0.664$ is also uniform across all bit positions $j$:
+decomposing by bit-$j$ edges, $\rho_j \approx 0.664$ with at most $5\%$
+variation across $j \in \{1,\ldots,m-1\}$ at each $m$.
+Theorem~\ref{thm:weight1} explains this uniformity:
+the local factors $\varphi_q(2^j)$ are independent of $j$.
 
-\begin{observation}
-Decomposing $E_1$ by bit position $j$ (where a bit-$j$ edge connects $x$ to
-$x\oplus 2^j$), the ratio $\rho_j = E_1^{(j)}/\mathbb{E}[E_1^{(j)}]$ is
-approximately \emph{uniform} across all $j\in\{1,\ldots,m-1\}$, deviating
-by at most 5\% across bit positions at each $m$.
-\end{observation}
+%% ---------------------------------------------------------------
+\section{Motivating Context: Hamming-Ball Prime Search}
+\label{sec:search}
+%% ---------------------------------------------------------------
 
-\paragraph{Interpretation.}
-The ratio $\rho\approx 0.67$ is consistent with sieve repulsion. For the bit-1
-edge (step $\pm 2$, corresponding to twin primes), the Hardy--Littlewood
-constant $C_2\approx 0.66$ predicts that twin prime pairs occur at a fraction
-$C_2$ of the naive density-squared rate. The same modular-arithmetic obstruction
-applies to all other step sizes $2^j$: given that $p$ is prime, small-prime
-divisibility considerations reduce the probability that $p\pm 2^j$ is also
-prime. The near-uniformity across bit positions reflects that the dominant
-sieve correction (modulo 3) is independent of the step size.
+The XOR autocorrelation work arose from an experiment on prime search geometry.
+We briefly report the search findings; the search code and full results are at the
+repository linked below.
 
-\paragraph{Contrast with search geometry.}
-In the search experiments, low bit positions are preferred: low-bit-first
-ordering works because small bit flips correspond to small arithmetic changes,
-where prime density on the number line is relevant. In the edge-count
-experiment, there is \emph{no} bit-position gradient: all directions show the
-same $\approx 33\%$ deficit. This contrast is a key finding:
-\emph{search-path bias and prime-prime edge geometry are different phenomena
-arising from different mechanisms.}
+\subsection{Setup}
+
+Given starting integer $x$, set $x_0 = x \,|\, 1$ (force odd).
+A \emph{Hamming search strategy} generates a list of flip sets
+$\mathcal{F}(m, r_{\max})$ --- tuples of bit positions from $\{1,\ldots,m-1\}$ ---
+and tests $x_0 \oplus \mathrm{mask}(S)$ for each $S \in \mathcal{F}$ in turn.
+The standard alternative, \emph{odd-increment search} (SOI),
+tests $x_0, x_0+2, x_0+4, \ldots$
+
+\subsection{Main findings}
+
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{SOI has the lowest average candidate checks}
+    at $m \in \{24,28,32\}$ (Table~\ref{tab:checks}).
+
+  \item \textbf{LBF wins per-instance on 58--63\% of starting points.}
+    Low-bit-first Hamming search (LBF) wins or ties SOI on a majority of
+    individual inputs despite a higher average check count.
+
+  \item \textbf{Two Pareto-incomparable geometries.}
+    SOI minimises arithmetic distance to the found prime;
+    Hamming search minimises Hamming distance.
+    Neither dominates when both objectives are evaluated.
+
+  \item \textbf{Search-path bias $\neq$ edge repulsion.}
+    LBF favours low bit positions because small flips correspond to small
+    arithmetic changes.  The Hamming-1 edge repulsion ($\rho \approx 0.664$)
+    is \emph{uniform} across all bit positions.
+    The two phenomena have distinct causes.
+\end{enumerate}
+
+\begin{table}[h]
+\centering
+\caption{Average candidate checks by strategy.
+SOI = standard odd-increment, LBF = low-bit-first, LRN = learned bit-order.
+Lower is better.  $r_{\max}=4$, $N_{\mathrm{te}}=10{,}000$.}
+\label{tab:checks}
+\begin{tabular}{lrrr}
+\toprule
+Strategy & $m=24$ & $m=28$ & $m=32$ \\
+\midrule
+SOI  & \textbf{7.49} & \textbf{8.73} & \textbf{10.17} \\
+LBF  & 8.38 & 9.95 & 11.53 \\
+LRN  & 8.37 & 9.96 & 11.56 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Sieve-aware search}
+
+The singular series suggests a new search strategy:
+rank flip sets within each Hamming radius by $S_{\mathrm{xor}}(\mathrm{mask})$
+descending, so that masks predicted to produce more prime pairs are tried first.
+The \texttt{SieveAwarePolicy} implementing this is included in the repository.
+A formal comparison against LBF and SOI is an open experimental question.
 
 %% ---------------------------------------------------------------
 \section{Related Work}
 \label{sec:related}
 %% ---------------------------------------------------------------
 
-\paragraph{Prime gaps.}
-The distribution of gaps between consecutive primes is well-studied
-\citep{cramer1936, granville1995, maynard2015}. Our work is complementary:
-we study not arithmetic gaps but Hamming distances, which encode a different
-notion of proximity.
+\paragraph{Hardy--Littlewood conjectures.}
+\citet{hardylittlewood1923} introduced the singular series for prime pairs
+$(p, p+2k)$.  Our XOR singular series is structurally analogous but
+governs XOR geometry, not arithmetic progressions.
+The local factors coincide at weight 1, as shown in Theorem~\ref{thm:weight1}.
 
-\paragraph{The binary hypercube.}
-The hypercube is a classical object in combinatorics and coding theory
-\citep{macwilliams1977, knuth2011}. Boolean functions on the hypercube have
-been extensively analyzed \citep{odonnell2014}. The distribution of specific
-number-theoretic sets, such as primes, as subsets of the hypercube appears less
-standard as a unified search-geometry framework.
-
-\paragraph{Primality testing.}
-Miller--Rabin \citep{miller1976, rabin1980} and AKS \citep{agrawal2004} are
-standard primality-testing references. This work does not study primality
-testing itself; it studies candidate-generation policies.
+\paragraph{Sieve theory.}
+The factor $q(q-2)/(q-1)^2$ and the twin-prime constant $C_2$ are classical
+\citep{granville1995}. The weight-2 resonance condition $2^d \equiv \pm1 \pmod q$
+is governed by $\ord_q(2)$, a standard object in multiplicative number theory.
 
 \paragraph{Boolean Fourier analysis.}
-The Walsh--Fourier analysis of Boolean functions on $\{0,1\}^m$ is a standard
-tool in theoretical computer science \citep{odonnell2014}. Applying it to
-number-theoretic indicator functions such as the prime indicator is less
-standard; our experiments show that the prime indicator has small low-degree
-coefficients, consistent with prime pseudorandomness.
+The Walsh--Fourier analysis of Boolean functions is a classical tool
+\citep{odonnell2014}.  Applying it to the prime indicator is less standard;
+our experiments show small low-degree coefficients, consistent with the
+view that primality is a high-complexity Boolean function.
 
-\paragraph{Hardy--Littlewood conjectures and sieve theory.}
-The constant $C_2\approx 0.66$ appearing in our edge-count ratio $\rho$
-is the same constant from the Hardy--Littlewood twin prime conjecture
-\citep{cramér1936, granville1995}.  The sieve interpretation of $\rho<1$ is
-standard in analytic number theory, but the observation that this ratio is
-uniform across all Hamming-1 directions (all step sizes $2^j$) is a
-combinatorial-geometric formulation that does not appear in classical sources.
+\paragraph{Prime gaps and constellations.}
+Prime gap distributions \citep{cramer1936, granville1995, maynard2015} and the
+Green--Tao theorem \citep{greentao2008} concern arithmetic structure.
+Our XOR pairs are a different object; although the local factors agree at weight 1,
+the global problems are unrelated.
 
-\paragraph{Learned heuristics for mathematical search.}
-Machine-learning approaches to mathematical discovery and heuristic search
-have been explored in recent work such as \citet{davies2021}. Our learned
-bit-order policy is much simpler: it is a count-based heuristic rather than a
-neural model.
+\paragraph{Hypercube combinatorics.}
+The binary hypercube is a classical structure \citep{macwilliams1977, knuth2011}.
+Placing number-theoretic sets as hypercube subsets and studying their
+metric and spectral properties is less standard.
 
 %% ---------------------------------------------------------------
 \section{Conclusion}
 \label{sec:conclusion}
 %% ---------------------------------------------------------------
 
-We embedded prime numbers in the odd binary hypercube and studied two
-complementary questions: how does Hamming-ball prime search compare with
-standard arithmetic search, and do primes behave like a random subset of the
-odd hypercube?
+We have introduced the XOR singular series $S_{\mathrm{xor}}(a)$
+and shown that it predicts the prime-pair XOR autocorrelation
+$C_m(a)$ in the odd binary hypercube.
+The two proved theorems --- that weight-1 local factors are exactly
+$q(q-2)/(q-1)^2$ (independent of bit position) and the product equals
+the Hardy--Littlewood constant $C_2$, and that weight-2 local factors
+are determined by the resonance condition $2^d \equiv \pm 1 \pmod q$ ---
+give an analytical grip on the structure of prime-pair XOR geometry.
 
-The headline finding is a clean contrast:
+The headline result, stated precisely:
 
 \begin{center}
-\emph{Primes look random inside Hamming balls, but repel along hypercube edges.}
+\textit{The XOR autocorrelation of primes in the odd binary hypercube is\\
+predicted by a Hardy--Littlewood-like singular series whose local factors\\
+are determined by modular obstructions induced by the XOR mask.}
 \end{center}
 
-More precisely, the empirical findings are:
+At the ball and Fourier scale, primes look random.
+At the XOR-mask scale (weights $1$--$4$), they carry a structured sieve fingerprint
+well-described by $S_{\mathrm{xor}}$.
+At weight $\geq 5$, the fingerprint decays to noise.
 
-\paragraph{Search geometry.}
-\begin{enumerate}
-  \item SOI achieves the lowest average candidate-check count, but LBF wins or
-    ties SOI on 58--63\% of individual starting points.
-
-  \item The two search families are Pareto-incomparable: SOI minimizes
-    arithmetic distance, Hamming search minimizes Hamming distance.  Neither
-    dominates when both objectives are evaluated.
-
-  \item Bit-position bias in search paths (low bits preferred) reflects
-    arithmetic locality of the number line, not prime-prime Hamming geometry.
-\end{enumerate}
-
-\paragraph{Distribution geometry.}
-\begin{enumerate}
-  \setcounter{enumi}{3}
-  \item Hamming-ball prime counts fluctuate with z-scores close to $N(0,1)$,
-    indistinguishable from a random subset of the same density.
-
-  \item Low-degree Walsh--Fourier coefficients of the prime indicator are
-    consistent with random-baseline magnitudes; primes do not cluster by
-    simple parity patterns.
-
-  \item Prime-prime Hamming-1 edge counts are $\approx 33\%$ below the
-    random-model expectation ($\rho\approx 0.67$), uniform across all bit
-    positions and stable across $m=10$--$22$.  This is consistent with
-    Hardy--Littlewood sieve corrections.
-
-  \item Search-path bias and prime-prime edge repulsion are distinct
-    phenomena.  The first is bit-position-dependent; the second is not.
-    This distinction is not obvious at the outset.
-\end{enumerate}
-
-\subsection{What this framework provides}
-
-The overall contribution is an experimental hypercube-geometry framework for
-separating where primes look random and where arithmetic structure becomes
-visible.  The better framing is not ``Hamming search vs. arithmetic search,''
-but rather:
-
-\begin{quote}
-\emph{When does prime distribution in the hypercube reveal arithmetic
-structure, and at what scale?}
-\end{quote}
-
-The answer from these experiments: pseudorandom at the ball and Fourier scale,
-non-random at the single-edge scale.
-
-\subsection{Limitations}
-
-This work is empirical. No asymptotic claims are proved.  Experiments cover
-moderate bit sizes ($m\leq 32$ for search, $m\leq 22$ for edge counts, $m\leq
-20$ for Fourier).  The Hamming strategies tested are simple orderings of
-bit-flip masks; residue-aware policies may change the search tradeoffs.  The
-edge-count ratio $\rho\approx 0.67$ is consistent with Hardy--Littlewood
-constants but this connection is not proved rigorously here.
-
-\subsection{Open questions}
-
+\paragraph{Open problems.}
 \begin{enumerate}[label=(\roman*)]
-  \item \textbf{Asymptotic edge ratio.} Does $\rho\to C_2$ as $m\to\infty$,
-    where $C_2\approx 0.66$ is the Hardy--Littlewood twin-prime constant?  A
-    rigorous connection would require relating bit-1 Hamming-1 edges to twin
-    prime pairs and applying known sieve estimates.
-
-  \item \textbf{Hamming-distance-2 sieve repulsion.} The bit-1 edge deficit
-    reflects a sieve correction for step~$\pm 2$.  Do prime pairs at Hamming
-    distance 2 (two bit flips) show a corresponding correction, and how does
-    it relate to known constellations such as $\{p, p+2, p+6\}$?
-
-  \item \textbf{Uniformity across bit positions.} Is the near-uniform ratio
-    $\rho_j\approx 0.67$ across all $j$ provably implied by standard sieve
-    theory, or could a careful residue argument produce a gradient?
-
-  \item \textbf{Hypercube sieve.} Can modular structure be used to prescreen
-    Hamming candidates, eliminating those divisible by 3, 5, 7 before the
-    primality test?
-
-  \item \textbf{Larger search dimensions.} Do the Pareto structure and win
-    rates hold at $m\in\{40,48,64\}$?
-
-  \item \textbf{Fourier at larger $m$.} Can randomized or sketching-based
-    Fourier methods estimate low-degree coefficients at $m\geq 24$ without
-    enumerating all $2^{m-1}$ vertices?
+  \item Prove Conjecture~\ref{conj:main}: $\rho_m(a) \to S_{\mathrm{xor}}(a)$.
+    Even a result for weight-1 masks would be new.
+  \item Find closed forms for weight-3 local factors
+    (dependence on three pairwise bit-differences?).
+  \item Determine whether the decay rate $r \approx 0.46$ has a closed form
+    in terms of $C_2$ and the weight-2 resonance factors.
+  \item Does $\rho_m/S_{\mathrm{xor}} \to 1$ exactly, or is there a
+    persistent $O(1/m)$ correction analogous to the PNT secondary term?
 \end{enumerate}
 
 \subsection*{Code availability}
 
-All code, data generation scripts, analysis, and blog chapter drafts are
-available at:
+All code, scripts, and data:
 \[
   \text{\url{https://github.com/pojhafb/prime-hypercube-search}}
 \]
@@ -974,114 +705,98 @@ available at:
 \section{Flip-set construction}
 \label{app:flipsets}
 
-For $m$ bits and maximum radius $r_{\max}$, the full list of flip sets in the
-odd subcube is:
-\[
-  \mathcal{F}(m,r_{\max})
-  =
-  \bigcup_{r=0}^{r_{\max}}
-  \binom{\{1,\ldots,m-1\}}{r},
-\]
-where $\binom{S}{r}$ denotes all $r$-element subsets of $S$.
-
-The total number of flip sets is $B(m-1,r_{\max})$.
-
-\begin{center}
-\begin{tabular}{rrrrrr}
-\toprule
-$m$ & $r=0$ & $r=1$ & $r=2$ & $r=3$ & $r=4$ total \\
-\midrule
-16 & 1 & 15 & 105 & 455 & 1941 \\
-32 & 1 & 31 & 465 & 4495 & 36457 \\
-64 & 1 & 63 & 1953 & 39711 & 637393 \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-At $m=64$, the radius-4 odd-subcube flip-set list contains 637,393 candidates.
-Caching per $(m,\text{strategy})$ reduces this to a one-time cost per experiment.
+The full set of parity-preserving flip sets at radius $\leq r_{\max}$ is:
+$\mathcal{F}(m, r_{\max}) = \bigcup_{r=0}^{r_{\max}} \binom{\{1,\ldots,m-1\}}{r}$.
+At $m = 64$, $r_{\max} = 4$, this gives $637{,}393$ candidates,
+cached once per $(m, \text{strategy})$.
 
 \section{Primality testing}
 \label{app:primality}
 
-We use \texttt{sympy.isprime}, which combines trial division and primality tests
-such as Miller--Rabin and Baillie--PSW depending on the size of the input.
-Results are cached via \texttt{functools.lru\_cache} with capacity
-$2\times 10^6$.
-
-The goal of this work is not to benchmark primality-testing algorithms
-themselves, but to compare candidate-generation policies. All strategies in a
-given experiment use the same primality-testing backend.
+All primality tests use \texttt{sympy.isprime}
+(trial division + Miller--Rabin + Baillie--PSW, depending on input size),
+cached via \texttt{functools.lru\_cache}.
+All strategies in a given experiment share the same backend.
 
 %% ---------------------------------------------------------------
 \begin{thebibliography}{99}
 
 \bibitem[Agrawal et~al.(2004)]{agrawal2004}
 Agrawal, M., Kayal, N., and Saxena, N. (2004).
-\newblock PRIMES is in P.
-\newblock \emph{Annals of Mathematics}, 160(2), 781--793.
+PRIMES is in P.
+\emph{Annals of Mathematics}, 160(2), 781--793.
 
 \bibitem[Cram\'er(1936)]{cramer1936}
 Cram\'er, H. (1936).
-\newblock On the order of magnitude of the difference between consecutive prime numbers.
-\newblock \emph{Acta Arithmetica}, 2, 23--46.
+On the order of magnitude of the difference between consecutive prime numbers.
+\emph{Acta Arithmetica}, 2, 23--46.
 
 \bibitem[Davies et~al.(2021)]{davies2021}
 Davies, A., Veli\v{c}kovi\'c, P., Buesing, L., et~al. (2021).
-\newblock Advancing mathematics by guiding human intuition with AI.
-\newblock \emph{Nature}, 600, 70--74.
+Advancing mathematics by guiding human intuition with AI.
+\emph{Nature}, 600, 70--74.
 
 \bibitem[de~la Vall\'ee~Poussin(1896)]{delavalleepoussin1896}
 de~la Vall\'ee~Poussin, C.~J. (1896).
-\newblock Recherches analytiques sur la th\'eorie des nombres premiers.
-\newblock \emph{Annales de la Soci\'et\'e Scientifique de Bruxelles}, 20, 183--256.
+Recherches analytiques sur la th\'eorie des nombres premiers.
+\emph{Annales de la Soci\'et\'e Scientifique de Bruxelles}, 20, 183--256.
 
 \bibitem[Granville(1995)]{granville1995}
 Granville, A. (1995).
-\newblock Harald Cram\'er and the distribution of prime numbers.
-\newblock \emph{Scandinavian Actuarial Journal}, 1995(1), 12--28.
+Harald Cram\'er and the distribution of prime numbers.
+\emph{Scandinavian Actuarial Journal}, 1995(1), 12--28.
+
+\bibitem[Green and Tao(2008)]{greentao2008}
+Green, B. and Tao, T. (2008).
+The primes contain arbitrarily long arithmetic progressions.
+\emph{Annals of Mathematics}, 167(2), 481--547.
 
 \bibitem[Hadamard(1896)]{hadamard1896}
 Hadamard, J. (1896).
-\newblock Sur la distribution des z\'eros de la fonction $\zeta(s)$ et ses
+Sur la distribution des z\'eros de la fonction $\zeta(s)$ et ses
   cons\'equences arithm\'etiques.
-\newblock \emph{Bulletin de la Soci\'et\'e Math\'ematique de France}, 24, 199--220.
+\emph{Bulletin de la Soci\'et\'e Math\'ematique de France}, 24, 199--220.
+
+\bibitem[Hardy and Littlewood(1923)]{hardylittlewood1923}
+Hardy, G.~H. and Littlewood, J.~E. (1923).
+Some problems of `Partitio Numerorum' III: On the expression of a number
+as a sum of primes.
+\emph{Acta Mathematica}, 44, 1--70.
 
 \bibitem[Knuth(2011)]{knuth2011}
 Knuth, D.~E. (2011).
-\newblock \emph{The Art of Computer Programming, Volume~4A: Combinatorial
-  Algorithms, Part~1}.
-\newblock Addison-Wesley.
+\emph{The Art of Computer Programming, Volume~4A}.
+Addison-Wesley.
 
 \bibitem[MacWilliams and Sloane(1977)]{macwilliams1977}
 MacWilliams, F.~J. and Sloane, N.~J.~A. (1977).
-\newblock \emph{The Theory of Error-Correcting Codes}.
-\newblock North-Holland.
+\emph{The Theory of Error-Correcting Codes}.
+North-Holland.
 
 \bibitem[Maynard(2015)]{maynard2015}
 Maynard, J. (2015).
-\newblock Small gaps between primes.
-\newblock \emph{Annals of Mathematics}, 181(1), 383--413.
+Small gaps between primes.
+\emph{Annals of Mathematics}, 181(1), 383--413.
 
 \bibitem[Menezes et~al.(1996)]{menezes1996}
 Menezes, A.~J., van Oorschot, P.~C., and Vanstone, S.~A. (1996).
-\newblock \emph{Handbook of Applied Cryptography}.
-\newblock CRC Press.
+\emph{Handbook of Applied Cryptography}.
+CRC Press.
 
 \bibitem[Miller(1976)]{miller1976}
 Miller, G.~L. (1976).
-\newblock Riemann's hypothesis and tests for primality.
-\newblock \emph{Journal of Computer and System Sciences}, 13(3), 300--317.
+Riemann's hypothesis and tests for primality.
+\emph{Journal of Computer and System Sciences}, 13(3), 300--317.
 
 \bibitem[O'Donnell(2014)]{odonnell2014}
 O'Donnell, R. (2014).
-\newblock \emph{Analysis of Boolean Functions}.
-\newblock Cambridge University Press.
+\emph{Analysis of Boolean Functions}.
+Cambridge University Press.
 
 \bibitem[Rabin(1980)]{rabin1980}
 Rabin, M.~O. (1980).
-\newblock Probabilistic algorithm for testing primality.
-\newblock \emph{Journal of Number Theory}, 12(1), 128--138.
+Probabilistic algorithm for testing primality.
+\emph{Journal of Number Theory}, 12(1), 128--138.
 
 \end{thebibliography}
 

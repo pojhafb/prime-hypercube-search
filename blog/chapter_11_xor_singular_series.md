@@ -6,7 +6,7 @@
 
 Chapter 10 established that the XOR autocorrelation ratio ρ(a) = C(a)/E[C(a)] follows a clean alternating-geometric pattern across Hamming weights. Chapter 11 asks: *why* does ρ take those values, and can we predict ρ(a) mask-by-mask?
 
-The answer leads to an exact analog of the Hardy–Littlewood singular series — computable, provable for weight-1 and weight-2 masks, and confirmed empirically to Pearson r = 0.87 across 4 000+ masks.
+The answer leads to an exact analog of the Hardy–Littlewood singular series — computable numerically for any mask, with closed-form local factors for weight-1 and weight-2 masks, and confirmed empirically to Pearson r = 0.87 across 4 000+ masks.
 
 ---
 
@@ -61,7 +61,7 @@ Mean ρ/S_xor = **1.001 ± 0.001** across all weights and m values. The singular
 
 ## Analytical result I: weight-1 masks equal the twin prime constant
 
-**Theorem** (exact, provable from binary arithmetic):
+**Theorem** (exact in the large-m limit):
 
 For any bit position j ≥ 1 and any odd prime q:
 
@@ -166,7 +166,7 @@ The optimal bit-difference is determined by **how many prime factors 2^d − 1 a
 
 Assembling the pieces, the conjecture takes a precise form:
 
-**Conjecture (XOR Hardy–Littlewood).** For m → ∞ and any even mask a with popcount(a) bounded:
+**Conjecture (XOR Hardy–Littlewood).** For m → ∞ and any parity-preserving mask a (bit 0 of a is 0) with popcount(a) bounded:
 
 ```
 C_m(a)  ~  S_xor(a) · |P_m|² / 2^(m−1)
@@ -197,7 +197,7 @@ S_xor(2^j) = C₂  =  ∏_{q≥3} q(q−2)/(q−1)²  ≈  0.66016...
 
 The arithmetic Hardy–Littlewood conjecture predicts C_arith(d) = |{p ≤ x : p + d prime}| via a product of local factors over residues mod q. Those local factors have a closed algebraic form because addition mod q is well-behaved.
 
-XOR does not respect modular arithmetic: x ⊕ a is not x + a mod q. So the XOR local factors cannot be derived algebraically from residue classes — they must be computed numerically from the binary digit structure of odd integers. Yet the final answers match:
+XOR does not respect modular arithmetic: x ⊕ a is not x + a mod q, so the local factors are not functions of a mod q alone. However, for fixed masks they can be computed by finite enumeration over bit patterns and residues mod q, and in low weights they admit closed forms — as the weight-1 and weight-2 theorems above show. The final answers match the arithmetic case:
 
 - For weight-1 XOR masks and arithmetic pairs (p, p + 2k): **same local factor formula, same product.**
 - The Hardy–Littlewood constant C₂ appears in both — not by coincidence, but because both count the probability that two "independent-looking" odd integers both avoid small primes, and in both cases the only obstruction is that the shift (arithmetic or XOR) might align residues.
@@ -214,7 +214,7 @@ Three immediate questions:
 
 2. **Finite-m correction.** The observed mean ρ/S_xor = 1.001 but decreases toward 1.000 as m grows. Is there a log-correction analogous to the π(x) ~ x/log x error in the prime number theorem?
 
-3. **Proof of global convergence.** The product S_xor(a) = ∏_q φ_q(a) is finite for any fixed a (since φ_q → 1 exponentially fast). The conjecture ρ_m(a) → S_xor(a) would follow from a statement about equidistribution of primes in XOR-translated intervals — an open problem related to Chowla's conjecture on prime correlations.
+3. **Proof of global convergence.** For fixed bounded-popcount masks, the local factors satisfy φ_q(a) = 1 + O(1/q²) away from finitely many resonant primes, so the Euler product is expected to converge. The conjecture ρ_m(a) → S_xor(a) would follow from a statement about equidistribution of primes in XOR-translated ranges — an open problem related to Chowla's conjecture on prime correlations.
 
 ---
 

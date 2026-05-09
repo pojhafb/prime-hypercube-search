@@ -16,7 +16,7 @@ Everything in this series reduces to one measurement. Take the odd binary hyperc
 C_m(a)  =  |{ p ∈ P_m : p ⊕ a ∈ P_m }|
 ```
 
-This counts prime pairs whose XOR is exactly a. The ratio against the random-subset baseline:
+This counts **ordered** prime pairs whose XOR is exactly a — each unordered pair {p, q} is counted twice (once from p, once from q), so undirected edge counts are C_m(a)/2 for a ≠ 0. The ratio against the random-subset baseline:
 
 ```
 ρ_m(a)  =  C_m(a) / E[C_m(a)]  =  C_m(a) / (δ_m² · 2^(m−1))
@@ -163,7 +163,7 @@ The edge deficit is exactly what Theorem 1 predicts. The graph fragmentation is 
 
 ## The conjecture
 
-**Conjecture (XOR Hardy–Littlewood).** For any fixed even mask a with popcount(a) bounded:
+**Conjecture (XOR Hardy–Littlewood).** For any fixed parity-preserving mask a (bit 0 of a is 0) with popcount(a) bounded:
 
 ```
 ρ_m(a)  →  S_xor(a)    as m → ∞

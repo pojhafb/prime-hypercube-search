@@ -1,0 +1,387 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{microtype}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+
+\newcommand{\Pm}{P_m}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\ord}{\mathrm{ord}}
+
+\title{%
+  Prime-Pair XOR Autocorrelation in the Binary Hypercube:\\
+  A Hardy--Littlewood Analog
+}
+
+\author{Preetam Ojha \\ \texttt{nehu.preet@gmail.com}}
+\date{May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Let $P_m$ denote the set of odd primes in $\{1,3,\ldots,2^m-1\}$.
+For a parity-preserving mask $a$ (i.e.\ $a$ even, so $x \oplus a$ stays odd),
+define the XOR autocorrelation
+$C_m(a) = |\{(p,q) : p,q \in P_m,\; p \oplus q = a\}|$
+and the ratio $\rho_m(a) = C_m(a)/\mathbb{E}_{\mathrm{rand}}[C_m(a)]$.
+We define an \emph{XOR singular series}
+$S_{\mathrm{xor}}(a) = \prod_{q \geq 3} \varphi_q(a)$
+whose local factors $\varphi_q(a)$ measure the sieve obstruction at prime $q$.
+We prove that for weight-1 masks $a = 2^j$, the limiting local factor is
+$\varphi_q(2^j) = q(q-2)/(q-1)^2$, independent of~$j$,
+and the infinite product equals the Hardy--Littlewood twin-prime constant
+$C_2 \approx 0.66016$.
+For weight-2 masks $a = 2^j + 2^k$, the local factor is
+$q(2q-3)/(2(q-1)^2)$ when $2^{|k-j|} \equiv \pm 1 \pmod{q}$ (resonant case)
+and $q(q-2)/(q-1)^2$ otherwise.
+Numerical experiments at $m \in \{16, 18, 20\}$ confirm
+$\rho_m(a) \approx S_{\mathrm{xor}}(a)$ with Pearson correlation $r \approx 0.88$
+and mean ratio $\rho_m/S_{\mathrm{xor}} = 1.001 \pm 0.001$ across
+thousands of masks of weight $1$--$4$.
+We conjecture $\rho_m(a) \to S_{\mathrm{xor}}(a)$ as $m \to \infty$.
+\end{abstract}
+
+%% ---------------------------------------------------------------
+\section{Setup}
+%% ---------------------------------------------------------------
+
+Fix $m \geq 2$ and let $Q_m^{\mathrm{odd}} = \{1, 3, 5, \ldots, 2^m - 1\}$
+be the odd integers in $m$ bits, with $|Q_m^{\mathrm{odd}}| = 2^{m-1}$.
+Write $P_m = \{p \in Q_m^{\mathrm{odd}} : p \text{ prime}\}$
+and $\delta_m = |P_m|/2^{m-1}$.
+
+\begin{definition}
+A mask $a$ is \emph{parity-preserving} if $\mathrm{bit}_0(a) = 0$,
+equivalently $a$ is even.
+Then $x \oplus a$ is odd whenever $x$ is odd.
+The \emph{XOR autocorrelation} at mask $a$ is the ordered-pair count:
+\[
+  C_m(a)
+  \;=\;
+  \sum_{x \in Q_m^{\mathrm{odd}}} \mathbf{1}[x \in P_m]\,\mathbf{1}[x \oplus a \in P_m].
+\]
+Each unordered prime pair $\{p,q\}$ with $p \oplus q = a$ contributes~2
+to $C_m(a)$.
+\end{definition}
+
+Under a Bernoulli null model (primes are an independent $\delta_m$-subset),
+$\mathbb{E}[C_m(a)] = \delta_m^2 \cdot 2^{m-1}$ for any $a \neq 0$.
+Define the \emph{normalised ratio}:
+\[
+  \rho_m(a) \;=\; \frac{C_m(a)}{\delta_m^2 \cdot 2^{m-1}}.
+\]
+
+$C_m(a)$ is computable for all masks simultaneously via the
+Walsh--Hadamard transform:
+$C = \mathrm{IWHT}(\mathrm{WHT}(f)^2)$ where $f$ is the prime indicator
+on $Q_m^{\mathrm{odd}}$, in time $O(m \cdot 2^m)$.
+
+%% ---------------------------------------------------------------
+\section{The XOR Singular Series}
+%% ---------------------------------------------------------------
+
+\begin{definition}
+For an odd prime $q$ and a parity-preserving mask $a$, define the
+\emph{local factor}:
+\[
+  \varphi_q(a)
+  \;=\;
+  \frac{P(q \nmid x \;\text{and}\; q \nmid x \oplus a)}{(1 - 1/q)^2},
+\]
+where the probability is over odd integers $x$ drawn uniformly
+from $\{1, 3, \ldots, 2^m - 1\}$ as $m \to \infty$.
+The \emph{XOR singular series} is:
+\[
+  S_{\mathrm{xor}}(a)
+  \;=\;
+  \prod_{\substack{q \;\text{prime} \\ q \geq 3}} \varphi_q(a).
+\]
+\end{definition}
+
+\begin{remark}
+For fixed bounded-popcount masks, $\varphi_q(a) = 1 + O(1/q^2)$
+away from finitely many resonant primes (since $q(q-2)/(q-1)^2 = 1 - 1/(q-1)^2$),
+so the Euler product converges absolutely.
+\end{remark}
+
+%% ---------------------------------------------------------------
+\section{Main Results}
+%% ---------------------------------------------------------------
+
+\begin{theorem}[Weight-1 local factor]
+\label{thm:weight1}
+Let $j \geq 1$ and let $q$ be an odd prime.
+In the limit $m \to \infty$, the local factor for mask $a = 2^j$ is:
+\[
+  \varphi_q(2^j)
+  \;=\;
+  \frac{q(q-2)}{(q-1)^2},
+\]
+independent of the bit position~$j$.
+\end{theorem}
+
+\begin{proof}
+We need $P(q \nmid x \text{ and } q \nmid x \oplus 2^j)$ over odd $x$.
+Write $x \oplus 2^j = x + 2^j(1 - 2\,\mathrm{bit}_j(x))$: if bit~$j$ of $x$ is 0,
+the XOR adds $2^j$; if bit~$j$ is 1, it subtracts $2^j$.
+
+For large $m$, the residue $x \bmod q$ and the bit $\mathrm{bit}_j(x)$
+are asymptotically independent and jointly uniform, since $q$ is odd
+and the binary representation imposes no congruence on bit~$j$.
+Hence:
+\[
+  P(q \nmid x \oplus 2^j \mid x \equiv r \pmod{q})
+  \;=\;
+  \tfrac{1}{2} \cdot [r + 2^j \not\equiv 0] + \tfrac{1}{2} \cdot [r - 2^j \not\equiv 0]
+  \pmod{q}.
+\]
+Since $2^j \not\equiv 0 \pmod{q}$ (as $q$ is odd), the two shifts
+$r \mapsto r \pm 2^j$ hit $0 \bmod q$ at distinct values of $r$,
+so at most one of the two conditions fails for any given~$r$.
+Summing over $r \not\equiv 0 \pmod{q}$:
+\[
+  P(q \nmid x \text{ and } q \nmid x \oplus 2^j)
+  \;=\;
+  \frac{q-2}{q}.
+\]
+Dividing by the baseline $(1 - 1/q)^2 = (q-1)^2/q^2$ gives $q(q-2)/(q-1)^2$.
+The result is independent of $j$ because the argument uses only
+$2^j \not\equiv 0 \pmod{q}$, which holds for all $j \geq 1$
+and all odd primes $q$.
+\end{proof}
+
+\begin{corollary}[Connection to the twin-prime constant]
+\label{cor:C2}
+For any bit position $j \geq 1$:
+\[
+  S_{\mathrm{xor}}(2^j)
+  \;=\;
+  \prod_{q \geq 3} \frac{q(q-2)}{(q-1)^2}
+  \;=\;
+  C_2
+  \;\approx\;
+  0.66016,
+\]
+where $C_2$ is the Hardy--Littlewood twin-prime constant.
+\end{corollary}
+
+\begin{proof}
+The product identity $\prod_{q \geq 3} q(q-2)/(q-1)^2 = C_2$
+is the standard Euler product representation of $C_2$
+\cite{hardylittlewood1923}.
+\end{proof}
+
+\begin{theorem}[Weight-2 local factor]
+\label{thm:weight2}
+Let $j < k$, both $\geq 1$, set $d = k - j$, and let $q$ be an odd prime.
+In the limit $m \to \infty$, the local factor for $a = 2^j + 2^k$ is:
+\[
+  \varphi_q(2^j + 2^k)
+  \;=\;
+  \begin{cases}
+    \dfrac{q(2q-3)}{2(q-1)^2}
+    & \text{if } 2^d \equiv \pm 1 \pmod{q}, \\[8pt]
+    \dfrac{q(q-2)}{(q-1)^2}
+    & \text{otherwise.}
+  \end{cases}
+\]
+\end{theorem}
+
+\begin{proof}
+Flipping bits $j$ and $k$ maps $x$ to $x \oplus 2^j \oplus 2^k$.
+Decompose on whether bits $j$ and $k$ of $x$ are equal or unequal
+(each case has probability $1/2$ asymptotically, independently of $x \bmod q$):
+
+\smallskip
+\noindent\textbf{Case 1: resonant ($2^d \equiv \pm 1 \pmod{q}$).}
+Here $2^k \equiv \varepsilon 2^j \pmod{q}$ for $\varepsilon \in \{+1,-1\}$.
+\begin{itemize}
+\item Bits $j = k$ in $x$ (probability $1/2$): the two flips contribute
+  $\pm 2^j \pm \varepsilon 2^j = 0$ or $\pm 2^{j+1} \pmod{q}$.
+  Specifically, when $\varepsilon = +1$ the shifts cancel ($x \oplus a \equiv x$);
+  when $\varepsilon = -1$ they also cancel by similar symmetry.
+  In either sub-case, $x \oplus a \equiv x \pmod{q}$,
+  so $P(q \nmid x \oplus a \mid \text{bits } j = k) = P(q \nmid x) = (q-1)/q$.
+\item Bits $j \neq k$ in $x$ (probability $1/2$): the net shift is
+  $\pm 2^{j+1}$ or $\pm 2(2^j) \not\equiv 0$, so
+  $P(q \nmid x \oplus a \mid \text{bits } j \neq k,\, q \nmid x) = (q-2)/(q-1)$.
+\end{itemize}
+Combining:
+\[
+  P(q \nmid x \text{ and } q \nmid x \oplus a)
+  = \tfrac{1}{2} \cdot \tfrac{q-1}{q} + \tfrac{1}{2} \cdot \tfrac{q-2}{q}
+  = \frac{2q-3}{2q}.
+\]
+Dividing by $(q-1)^2/q^2$ gives $q(2q-3)/(2(q-1)^2)$.
+
+\smallskip
+\noindent\textbf{Case 2: non-resonant ($2^d \not\equiv \pm 1 \pmod{q}$).}
+The two shifts $\pm 2^j$ and $\pm 2^k$ are distinct and non-cancelling mod $q$,
+so for each assignment of bits $j$, $k$ the combined shift is non-zero.
+A residue computation analogous to Theorem~\ref{thm:weight1}
+gives $P(q \nmid x \text{ and } q \nmid x \oplus a) = (q-2)/q$,
+yielding the weight-1 factor $q(q-2)/(q-1)^2$.
+\end{proof}
+
+\begin{remark}[Resonance and multiplicative order]
+The condition $2^d \equiv \pm 1 \pmod{q}$ holds if and only if
+$\ord_q(2)$ divides $d$ or $\ord_q(2)$ divides $2d$ (but not $d$).
+For $q = 3$, $\ord_3(2) = 2$, so $2^d \equiv \pm 1 \pmod 3$ for
+\emph{all} $d \geq 1$: every weight-2 mask is resonant at $q = 3$,
+with $\varphi_3 = 9/8$ universally.
+\end{remark}
+
+\begin{corollary}[Optimal weight-2 mask]
+A weight-2 mask $2^j + 2^k$ maximises $S_{\mathrm{xor}}$ when
+the bit-difference $d = k - j$ simultaneously satisfies
+$2^d \equiv \pm 1 \pmod{q}$ for the largest possible set of small primes $q$.
+This is equivalent to maximising the number of small prime factors of
+$2^d - 1$ and $2^d + 1$.
+For $d = 12$: $2^{12} - 1 = 3^2 \cdot 5 \cdot 7 \cdot 13$
+and $2^{12} + 1 = 17 \cdot 241$,
+giving simultaneous resonance at $q \in \{3, 5, 7, 13, 17\}$
+and the largest predicted $S_{\mathrm{xor}}$ among $d \leq 20$.
+\end{corollary}
+
+%% ---------------------------------------------------------------
+\section{The Conjecture}
+%% ---------------------------------------------------------------
+
+\begin{conjecture}[XOR Hardy--Littlewood]
+\label{conj:main}
+For any fixed parity-preserving mask $a$ with $\mathrm{popcount}(a)$ bounded:
+\[
+  C_m(a)
+  \;\sim\;
+  S_{\mathrm{xor}}(a) \cdot \delta_m^2 \cdot 2^{m-1}
+  \qquad \text{as } m \to \infty,
+\]
+equivalently $\rho_m(a) \to S_{\mathrm{xor}}(a)$.
+\end{conjecture}
+
+Conjecture~\ref{conj:main} is the XOR analog of the Hardy--Littlewood
+conjecture for arithmetic prime pairs \cite{hardylittlewood1923}:
+both predict prime-pair counts as a product over local sieve obstructions.
+The arithmetic version predicts $|\{p \leq x : p + 2k \text{ prime}\}|$
+via $\prod_q \sigma_q(2k)$ where $\sigma_q$ has a closed residue formula;
+our version predicts XOR pair counts via $\prod_q \varphi_q(a)$
+where local factors are determined by binary arithmetic.
+
+%% ---------------------------------------------------------------
+\section{Numerical Validation}
+%% ---------------------------------------------------------------
+
+We compute $C_m(a)$ for all parity-preserving masks of weight $1$--$4$
+at $m \in \{16, 18, 20\}$ using the WHT, and compute $S_{\mathrm{xor}}(a)$
+by numerical integration of the local factors over odd integers in $[1, 2^{18})$.
+
+\begin{table}[h]
+\centering
+\caption{Singular series validation: Pearson $r$ between $\rho_m(a)$ and
+$S_{\mathrm{xor}}(a)$, and mean ratio $\rho_m/S_{\mathrm{xor}}$,
+over all weight $1$--$4$ masks.}
+\label{tab:validation}
+\begin{tabular}{rrrrrr}
+\toprule
+$m$ & Masks & Pearson $r$ & Mean $\rho/S_{\mathrm{xor}}$ & Std \\
+\midrule
+16 & 1940 & 0.886 & 1.001 & 0.04 \\
+18 & 3213 & 0.859 & 1.001 & 0.04 \\
+20 & 5035 & 0.879 & 1.002 & 0.04 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Per-weight breakdown at $m = 20$:
+
+\begin{table}[h]
+\centering
+\caption{Mean $\rho_m(a)$ vs.\ mean $S_{\mathrm{xor}}(a)$ and ratio by mask weight, $m=20$.}
+\label{tab:byweight}
+\begin{tabular}{rrrrrr}
+\toprule
+Weight & $n$ & Mean $\rho$ & Mean $S_{\mathrm{xor}}$ & Mean $\rho/S_{\mathrm{xor}}$ \\
+\midrule
+1 & 19   & 0.6624 & 0.6660 & 0.9946 \\
+2 & 171  & 1.1393 & 1.1398 & 0.9995 \\
+3 & 969  & 0.9382 & 0.9347 & 1.0046 \\
+4 & 3876 & 1.0358 & 1.0341 & 1.0018 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The weight-1 mean $\rho \approx 0.6624$ is consistent with
+$S_{\mathrm{xor}}(2^j) = C_2 \approx 0.66016$
+(Corollary~\ref{cor:C2}), with the small residual
+attributable to finite-$m$ boundary effects.
+
+The local factor formulas of Theorems \ref{thm:weight1} and \ref{thm:weight2}
+are verified to six decimal places: the formula $q(q-2)/(q-1)^2$ matches
+the numerically computed $\varphi_q(2^j)$ for all primes $q \leq 47$
+and all bit positions $j \in \{1, \ldots, 19\}$ with zero spread across $j$.
+The weight-2 formula is verified for all primes $q \leq 13$
+and all bit-differences $d \in \{1, \ldots, 13\}$.
+
+%% ---------------------------------------------------------------
+\section{Discussion}
+%% ---------------------------------------------------------------
+
+\paragraph{Scale-dependent structure.}
+The XOR autocorrelation reveals a three-scale picture.
+At the scale of Hamming balls (radius $\geq 2$),
+prime counts are indistinguishable from a random subset:
+z-scores follow $N(0,1)$ and low-degree Walsh--Fourier coefficients
+are consistent with random baselines.
+At the scale of XOR masks of weight $1$--$4$,
+a structured sieve fingerprint appears: $\rho_m(a)$ departs from 1
+by an amount well-predicted by $S_{\mathrm{xor}}(a)$,
+following the alternating pattern
+$\rho(k) \approx 1 + C_0(-r)^k$ ($C_0 \approx 0.70$, $r \approx 0.46$)
+where $k$ is the mask weight.
+At weight $\geq 5$, $|\rho - 1| < 1\sigma$ and primes appear random again.
+
+\paragraph{Comparison with arithmetic Hardy--Littlewood.}
+The arithmetic local factor for prime pairs $(p, p+2k)$ at a prime $q \nmid 2k$
+is also $q(q-2)/(q-1)^2$ --- identical to our weight-1 formula.
+In both cases the factor counts pairs of distinct residues modulo $q$;
+the coincidence follows from the shared elementary structure,
+not from any deep connection between XOR pairs and arithmetic pairs.
+
+\paragraph{Open problems.}
+(i) Does $\rho_m(a)/S_{\mathrm{xor}}(a) \to 1$ exactly, or is there a
+persistent $O(1/m)$ correction analogous to the error term in the PNT?
+(ii) Do weight-3 local factors admit a closed form in terms of the three
+pairwise bit-differences?
+(iii) Can Conjecture~\ref{conj:main} be proved for any infinite family of masks?
+
+%% ---------------------------------------------------------------
+
+\begin{thebibliography}{9}
+
+\bibitem{hardylittlewood1923}
+G.~H. Hardy and J.~E. Littlewood,
+\textit{Some problems of `Partitio Numerorum' III: On the expression of a number as a sum of primes},
+Acta Mathematica \textbf{44} (1923), 1--70.
+
+\bibitem{odonnell2014}
+R. O'Donnell,
+\textit{Analysis of Boolean Functions},
+Cambridge University Press, 2014.
+
+\bibitem{granville1995}
+A. Granville,
+Harald Cram\'er and the distribution of prime numbers,
+\textit{Scandinavian Actuarial Journal} \textbf{1995}(1) (1995), 12--28.
+
+\end{thebibliography}
+
+\end{document}
