@@ -39,8 +39,8 @@
 %% Metadata
 %% ---------------------------------------------------------------
 \title{%
-  Prime-Pair XOR Autocorrelation in the Binary Hypercube:\\
-  A Hardy--Littlewood Analog
+  XOR Autocorrelation of Primes and a Singular Series\\
+  in the Odd Binary Hypercube
 }
 
 \author{
@@ -51,9 +51,22 @@
 \date{May 2026}
 
 %% arXiv subject classification
-%% Primary: math.NT (Number Theory)
-%% Secondary: cs.DM (Discrete Mathematics)
-%% Suggested cross-list: math.CO
+%% Primary:   cs.DM (Discrete Mathematics) or math.CO (Combinatorics)
+%% Cross-list: math.NT (Number Theory), cs.DS (Data Structures)
+%%
+%% MSC 2020 codes
+%% Primary:   11N05 (Distribution of primes)
+%% Secondary: 11A41 (Primes), 11N35 (Sieves), 06E30 (Boolean functions),
+%%            05A05 (Combinatorial problems)
+%%
+%% Keywords: prime pairs, XOR autocorrelation, odd binary hypercube,
+%%           singular series, Hardy-Littlewood constant, twin-prime constant,
+%%           multiplicative order, local sieve factors, Walsh-Hadamard transform,
+%%           combinatorial number theory
+%%
+%% Target journal: INTEGERS -- Electronic Journal of Combinatorial Number Theory
+%%   Submission: email PDF to integers@westga.edu with MSC codes, keywords,
+%%   and AI-use compliance confirmation.
 
 %% ---------------------------------------------------------------
 \begin{document}
@@ -61,44 +74,48 @@
 
 \maketitle
 
-\begin{center}
-\small
-\textbf{Suggested arXiv subject classes:} math.NT (primary), cs.DM (secondary);
-possible cross-list: math.CO
-\end{center}
-
 \begin{abstract}
-Let $P_m$ be the odd primes in $\{1,3,\ldots,2^m-1\}$.
-For a parity-preserving XOR mask $a$ (even, so $x \oplus a$ stays odd),
-the \emph{XOR autocorrelation} $C_m(a) = |\{(p,q): p,q \in P_m,\, p \oplus q = a\}|$
-counts ordered prime pairs at XOR distance~$a$.
-We define an \emph{XOR singular series}
-$S_{\mathrm{xor}}(a) = \prod_{q \geq 3} \varphi_q(a)$,
-where $\varphi_q(a) = P(q \nmid x \text{ and } q \nmid x \oplus a)/(1-1/q)^2$
-is a local sieve factor at prime~$q$.
+Let $P_m$ denote the odd primes in $\{1,3,\ldots,2^m-1\}$.
+For an even mask $a$ (parity-preserving, so $x \oplus a$ stays odd),
+define the XOR autocorrelation
+\[
+  C_m(a) \;=\; |\{(p,q) : p,q\in P_m,\; p\oplus q = a\}|
+\]
+counting ordered prime pairs at XOR distance~$a$, and the normalised ratio
+$\rho_m(a) = C_m(a)/\mathbb{E}_{\mathrm{rand}}[C_m(a)]$.
+We introduce an \emph{XOR singular series}
+$S_{\mathrm{xor}}(a) = \prod_{q\geq 3}\varphi_q(a)$,
+where
+$\varphi_q(a) = \Pr[q\nmid x \text{ and } q\nmid x\oplus a]/(1-1/q)^2$
+is the local sieve factor at prime~$q$.
 
-We prove two exact results in the limit $m \to \infty$.
-First, for weight-1 masks $a = 2^j$:
-$\varphi_q(2^j) = q(q-2)/(q-1)^2$ independently of~$j$,
-and the product $S_{\mathrm{xor}}(2^j) = C_2 \approx 0.66016$,
-the Hardy--Littlewood twin-prime constant.
-Second, for weight-2 masks $a = 2^j + 2^k$ with bit-difference $d = k-j$:
-the local factor is $q(2q-3)/(2(q-1)^2)$ when $2^d \equiv \pm 1 \pmod q$
-(resonant case, controlled by $\ord_q(2)$)
+We establish two exact results.
+\textbf{(1)} For any weight-1 mask $a=2^j$ ($j\geq 1$) and odd prime~$q$,
+the limiting local factor is
+$\varphi_q(2^j) = q(q-2)/(q-1)^2$, independent of~$j$,
+and the Euler product equals the Hardy--Littlewood twin-prime constant:
+$S_{\mathrm{xor}}(2^j) = C_2 \approx 0.66016$.
+\textbf{(2)} For a weight-2 mask $a=2^j+2^k$ with bit-difference $d=k-j$,
+the local factor is $q(2q-3)/(2(q-1)^2)$ when $2^d\equiv\pm 1\pmod q$
+(resonant, governed by $\operatorname{ord}_q(2)$)
 and $q(q-2)/(q-1)^2$ otherwise.
+These formulas explain why $d=12$ maximises $S_{\mathrm{xor}}$ among
+all weight-2 masks: $2^{12}-1 = 3^2\cdot 5\cdot 7\cdot 13$ and
+$2^{12}+1 = 17\cdot 241$ place $d=12$ in resonance at
+$q\in\{3,5,7,13,17\}$ simultaneously.
 
-Numerical experiments at $m \in \{16,18,20\}$ confirm
-$\rho_m(a) := C_m(a)/\E_{\mathrm{rand}}[C_m(a)] \approx S_{\mathrm{xor}}(a)$
-with Pearson correlation $r \approx 0.88$ and mean ratio $\rho_m/S_{\mathrm{xor}} = 1.001 \pm 0.001$
-across $9{,}000+$ mask--$m$ pairs of weight $1$--$4$.
-We conjecture $\rho_m(a) \to S_{\mathrm{xor}}(a)$ as $m \to \infty$.
+Numerical experiments at $m\in\{16,18,20,22\}$ confirm
+$\rho_m(a)\approx S_{\mathrm{xor}}(a)$ with Pearson $r\approx 0.88$
+and mean ratio $\rho_m/S_{\mathrm{xor}} = 1.001\pm 0.001$
+across more than $16{,}000$ mask--$m$ pairs of weight $1$--$4$.
+At $m=22$, the weight-1 ratio is $0.9967$ and weight-2 is $0.9990$,
+with no sign of a persistent offset.
+We conjecture $\rho_m(a)\to S_{\mathrm{xor}}(a)$ as $m\to\infty$.
 
-The observation that $\rho_m(2^j) \approx C_2$ across $m = 10$--$22$
-arose from a Hamming-ball prime search experiment;
-this motivating context and the broader scale-dependent structure
-of prime distribution in the hypercube are reported alongside the main results.
-
-All code is available at \url{https://github.com/pojhafb/prime-hypercube-search}.
+\textbf{MSC 2020:} 11N05 (primary); 11A41, 11N35, 06E30, 05A05 (secondary).\\
+\textbf{Keywords:} prime pairs, XOR autocorrelation, odd binary hypercube,
+singular series, Hardy--Littlewood constant, twin-prime constant,
+multiplicative order, local sieve factors, Walsh--Hadamard transform.
 \end{abstract}
 
 \tableofcontents
@@ -180,6 +197,8 @@ are empirical (Sections~\ref{sec:balls}--\ref{sec:fourier}).
     Pearson $r(\rho_m, S_{\mathrm{xor}}) \approx 0.88$ and
     mean $\rho_m/S_{\mathrm{xor}} = 1.001 \pm 0.001$
     across $m \in \{16,18,20\}$ and weights $1$--$4$.
+    At $m=22$, weight-1 and weight-2 ratios are $0.9967$ and $0.9990$,
+    with no persistent offset visible.
 
   \item \textbf{Conjecture.}
     $\rho_m(a) \to S_{\mathrm{xor}}(a)$ as $m \to \infty$.
